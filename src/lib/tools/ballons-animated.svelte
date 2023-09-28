@@ -1,4 +1,4 @@
-<!-- <script lang="ts">
+<script lang="ts">
   import { onMount } from "svelte";
   import { Sound } from "svelte-sound";
   // Declare and initialize the color variables
@@ -132,4 +132,4 @@
       >
     </div>
   </button>
-{/if} -->
+{/if}

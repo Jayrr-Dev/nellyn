@@ -14,9 +14,7 @@
   import Lightbulb from "$lib/tools/lightbulb.svelte";
   import { onMount } from "svelte";
 
-  export const config: Config = {
-    runtime: "edge",
-  };
+
 
   let condition = true;
   const variants = {
