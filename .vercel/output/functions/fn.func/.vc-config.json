@@ -1,6 +1,5 @@
 {
-	"runtime": "nodejs16.x",
-	"handler": "..\\..\\..\\..\\..\\..\\..\\..\\Users\\ssori\\OneDrive\\Projects\\Adrianna Birthday Project\\nellyn\\nellyn\\.svelte-kit\\vercel-tmp\\index.js",
-	"launcherType": "Nodejs",
-	"experimentalResponseStreaming": true
+	"runtime": "edge",
+	"envVarsInUse": [],
+	"entrypoint": "index.js"
 }
