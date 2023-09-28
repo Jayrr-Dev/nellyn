@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   // @ts-nocheck
 
   // usually this import strategy should work:
@@ -71,4 +71,4 @@
     height: 100px;
     background-color: white;
   }
-</style>
+</style> -->
