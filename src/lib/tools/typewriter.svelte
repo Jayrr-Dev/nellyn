@@ -1,4 +1,3 @@
-<!-- 
 <script lang="ts">
   import { onMount } from "svelte";
   export let speed: number = 1.5;
@@ -49,4 +48,3 @@
     {messages[i]}
   </p>
 {/key}
- -->

@@ -1,4 +1,4 @@
-<!-- <script lang="ts">
+<script lang="ts">
   import { fade } from "svelte/transition";
 
   // Reactive variables to hold the colors
@@ -86,4 +86,4 @@ SVG with reactive color variables
   .transition {
     transition: fill 1s ease;
   }
-</style> -->
+</style>

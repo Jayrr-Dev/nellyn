@@ -526,7 +526,7 @@ var init__ = __esm({
     index = 0;
     component = async () => component_cache ?? (component_cache = (await Promise.resolve().then(() => (init_layout_svelte(), layout_svelte_exports))).default);
     universal_id = "src/routes/+layout.ts";
-    imports = ["_app/immutable/nodes/0.5c13e443.js", "_app/immutable/chunks/index.d145f4a5.js"];
+    imports = ["_app/immutable/nodes/0.415a4487.js", "_app/immutable/chunks/index.14cc8d2a.js"];
     stylesheets = ["_app/immutable/assets/0.84f53a77.css"];
     fonts = [];
   }
@@ -586,7 +586,7 @@ var init__2 = __esm({
   ".svelte-kit/output/server/nodes/1.js"() {
     index2 = 1;
     component2 = async () => component_cache2 ?? (component_cache2 = (await Promise.resolve().then(() => (init_error_svelte(), error_svelte_exports))).default);
-    imports2 = ["_app/immutable/nodes/1.31d65303.js", "_app/immutable/chunks/index.d145f4a5.js", "_app/immutable/chunks/singletons.287dd3cf.js", "_app/immutable/chunks/index.66b23e66.js"];
+    imports2 = ["_app/immutable/nodes/1.6d2fa7a6.js", "_app/immutable/chunks/index.14cc8d2a.js", "_app/immutable/chunks/singletons.75edb4e4.js", "_app/immutable/chunks/index.df3a4ca5.js"];
     stylesheets2 = [];
     fonts2 = [];
   }
@@ -2511,13 +2511,40 @@ var page_svelte_exports = {};
 __export(page_svelte_exports, {
   default: () => Page
 });
-var Typewriter, ballonpop, Ballons_animated, Lightbulb, css, Page;
+function typewriter(node, { speed: speed2 = 1 }) {
+  const valid = node.childNodes.length === 1 && node.childNodes[0].nodeType === Node.TEXT_NODE;
+  if (!valid) {
+    throw new Error("This transition only works on elements with a single text node child");
+  }
+  const text2 = node.textContent || "";
+  const duration = text2.length / (speed2 * 0.01);
+  return {
+    duration,
+    tick: (t) => {
+      const i2 = Math.trunc(text2.length * t);
+      node.textContent = text2.slice(0, i2);
+    }
+  };
+}
+var Typewriter, ballonpop, Ballons_animated, css$1, Lightbulb, css, Page;
 var init_page_svelte = __esm({
   ".svelte-kit/output/server/entries/pages/_page.svelte.js"() {
     init_chunks();
     init_svelte_sound();
     Typewriter = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      return ``;
+      let { speed = 1.5 } = $$props;
+      let { messages = [] } = $$props;
+      let { time = 2500 } = $$props;
+      let i = 0;
+      if ($$props.speed === void 0 && $$bindings.speed && speed !== void 0)
+        $$bindings.speed(speed);
+      if ($$props.messages === void 0 && $$bindings.messages && messages !== void 0)
+        $$bindings.messages(messages);
+      if ($$props.time === void 0 && $$bindings.time && time !== void 0)
+        $$bindings.time(time);
+      if ($$props.typewriter === void 0 && $$bindings.typewriter && typewriter !== void 0)
+        $$bindings.typewriter(typewriter);
+      return `<p class="h-5">${escape(messages[i])}</p>`;
     });
     ballonpop = "/_app/immutable/assets/ballonpop.12ac8348.wav";
     Ballons_animated = create_ssr_component(($$result, $$props, $$bindings, slots) => {
@@ -2539,8 +2566,25 @@ var init_page_svelte = __esm({
         $$bindings.height(height);
       return `${`<div class="absolute animate-move-up-to-spot"${add_attribute("style", `top: ${balloonTop}px; left: ${balloonLeft}px;`, 0)}><button class="animate-wiggle animate-infinite animate-duration-[3000ms]"><svg xmlns="http://www.w3.org/2000/svg"${add_attribute("width", width, 0)}${add_attribute("height", height, 0)} viewBox="0 0 512 512"><path${add_attribute("fill", stringColor, 0)} d="M418.739 509.346a5.25 5.25 0 0 1-5.25-5.25c0-17.544-6.158-30.82-19.38-41.783c-12.365-10.254-29.586-17.544-47.818-25.262c-24.229-10.257-49.284-20.863-69.091-40.203c-22.826-22.288-33.921-52.182-33.921-91.389a5.25 5.25 0 0 1 10.5 0c0 36.23 10.061 63.666 30.757 83.875c18.388 17.956 42.515 28.169 65.848 38.047c37.853 16.023 73.604 31.159 73.604 76.715a5.249 5.249 0 0 1-5.249 5.25z"></path><path${add_attribute("fill", ballonColor, 0)} d="M259.93 302.848c.476 1.218.938 2.419 1.353 3.576c.401 1.072.768 2.109 1.114 3.091c.342 .983.7 1.912.929 2.77c.466 1.715.428 3.145.242 4.146c-.183 1.001-.538 1.572-.538 1.572c-4.965 8.009-15.482 10.476-23.491 5.511a17.323 17.323 0 0 1-5.511-5.511s-.354-.572-.538-1.572c-.186-1.001-.224-2.43 .242-4.146c.229-.858.586-1.787.929-2.77c.346-.983.713-2.019 1.114-3.091c.415-1.157.877-2.358 1.353-3.576c-34.022-13.918-90.096-81.107-106.883-144.182a123.21 123.21 0 0 1-4.899-34.483C125.347 56.151 180.497 1 248.529 1s123.182 55.151 123.182 123.182a123.21 123.21 0 0 1-4.899 34.483c-16.787 63.075-72.86 130.265-106.882 144.183z"></path><path${add_attribute("fill", highlightColor, 0)} d="M195.957 124.182c0 22.075-10.33 39.97-23.073 39.97s-23.073-17.895-23.073-39.97s10.33-39.97 23.073-39.97c12.743.001 23.073 17.896 23.073 39.97z"></path></svg></button></div>`}`;
     });
+    css$1 = {
+      code: ".transition.svelte-1t6u28v{transition:fill 1s ease}",
+      map: null
+    };
     Lightbulb = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      return ``;
+      let glass = "#c0c0c0";
+      let circleColor = "#ffffff";
+      let filament = "#000000";
+      let bottomRectColor = "#99AAB5";
+      let linesColor = "#CCD6DD";
+      $$result.css.add(css$1);
+      return `<button class="bg-blue-500 text-white p-2">Change Colors
+</button>
+<button class="bg-green-500 text-white p-2">Change Glass Color
+</button>
+
+SVG with reactive color variables
+<div class="hover:animate-wiggle-more"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><path class="transition svelte-1t6u28v"${add_attribute("fill", glass, 0)} d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06z"></path><path class="animate-none"${add_attribute("fill", circleColor, 0)} d="M22.167 32.5c0 .828-2.234 2.5-4.167 2.5c-1.933 0-4.167-1.672-4.167-2.5c0-.828 2.233-.5 4.167-.5c1.933 0 4.167-.328 4.167.5z"></path><path class="animate-none"${add_attribute("fill", filament, 0)} d="M22.707 10.293a.999.999 0 0 0-1.414 0L18 13.586l-3.293-3.293a.999.999 0 1 0-1.414 1.414L17 15.414V26a1 1 0 1 0 2 0V15.414l3.707-3.707a.999.999 0 0 0 0-1.414z"></path><path class="animate-none"${add_attribute("fill", bottomRectColor, 0)} d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12v6z"></path><path class="animate-none"${add_attribute("fill", linesColor, 0)} d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014zm0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014z"></path></svg>
+</div>`;
     });
     css = {
       code: ".background.svelte-156l6yv{background:linear-gradient(250deg, rgb(50, 50, 255), rgb(150, 150, 250));display:flex;flex-direction:column;height:100vh;justify-content:center;align-items:center;overflow:hidden}",
@@ -2583,8 +2627,8 @@ var init__3 = __esm({
   ".svelte-kit/output/server/nodes/2.js"() {
     index3 = 2;
     component3 = async () => component_cache3 ?? (component_cache3 = (await Promise.resolve().then(() => (init_page_svelte(), page_svelte_exports))).default);
-    imports3 = ["_app/immutable/nodes/2.ca5b0318.js", "_app/immutable/chunks/index.d145f4a5.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.66b23e66.js"];
-    stylesheets3 = ["_app/immutable/assets/2.c7919047.css"];
+    imports3 = ["_app/immutable/nodes/2.3946a3f8.js", "_app/immutable/chunks/index.14cc8d2a.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.df3a4ca5.js"];
+    stylesheets3 = ["_app/immutable/assets/2.f39b8ce1.css"];
     fonts3 = [];
   }
 });
@@ -2758,7 +2802,7 @@ var options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "gkdtwx"
+  version_hash: "jcggy8"
 };
 function get_hooks() {
   return {};
@@ -6176,7 +6220,7 @@ var manifest = (() => {
     assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png"]),
     mimeTypes: { ".ico": "image/vnd.microsoft.icon", ".png": "image/png" },
     _: {
-      client: { "start": "_app/immutable/entry/start.5f6af432.js", "app": "_app/immutable/entry/app.53ef217b.js", "imports": ["_app/immutable/entry/start.5f6af432.js", "_app/immutable/chunks/index.d145f4a5.js", "_app/immutable/chunks/singletons.287dd3cf.js", "_app/immutable/chunks/index.66b23e66.js", "_app/immutable/entry/app.53ef217b.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.d145f4a5.js"], "stylesheets": [], "fonts": [] },
+      client: { "start": "_app/immutable/entry/start.324657ad.js", "app": "_app/immutable/entry/app.c85c1279.js", "imports": ["_app/immutable/entry/start.324657ad.js", "_app/immutable/chunks/index.14cc8d2a.js", "_app/immutable/chunks/singletons.75edb4e4.js", "_app/immutable/chunks/index.df3a4ca5.js", "_app/immutable/entry/app.c85c1279.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.14cc8d2a.js"], "stylesheets": [], "fonts": [] },
       nodes: [
         __memo(() => Promise.resolve().then(() => (init__(), __exports))),
         __memo(() => Promise.resolve().then(() => (init__2(), __exports2))),
