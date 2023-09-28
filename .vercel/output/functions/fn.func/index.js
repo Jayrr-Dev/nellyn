@@ -571,7 +571,7 @@ var init__2 = __esm({
   ".svelte-kit/output/server/nodes/1.js"() {
     index2 = 1;
     component2 = async () => component_cache2 ?? (component_cache2 = (await Promise.resolve().then(() => (init_error_svelte(), error_svelte_exports))).default);
-    imports2 = ["_app/immutable/nodes/1.4b953097.js", "_app/immutable/chunks/index.9c56d3c2.js", "_app/immutable/chunks/singletons.282a38d2.js"];
+    imports2 = ["_app/immutable/nodes/1.6e72d8d9.js", "_app/immutable/chunks/index.9c56d3c2.js", "_app/immutable/chunks/singletons.d92916cf.js"];
     stylesheets2 = [];
     fonts2 = [];
   }
@@ -720,7 +720,7 @@ var options = {
   root: Root,
   service_worker: false,
   templates: {
-    app: ({ head, body, assets: assets2, nonce, env }) => '<!DOCTYPE html>\r\n<html lang="en">\r\n	<head>\r\n		<meta charset="utf-8" />\r\n		<link rel="icon" href="' + assets2 + '/favicon.png" />\r\n		<meta name="viewport" content="width=device-width" />\r\n		' + head + '\r\n	</head>\r\n	<body data-sveltekit-preload-data="hover" class="bg-black text-white">\r\n		<div style="display: contents">' + body + "</div>\r\n		\r\n	</body>\r\n\r\n</html>\r\n",
+    app: ({ head, body, assets: assets2, nonce, env }) => '<!DOCTYPE html>\r\n<html lang="en">\r\n	<head>\r\n		<meta charset="utf-8" />\r\n		<link rel="icon" href="' + assets2 + '/favicon.png" />\r\n		<meta name="viewport" content="width=device-width" />\r\n		' + head + '\r\n	</head>\r\n	<body data-sveltekit-preload-data="hover" class="bg-black text-white">\r\n		<div style="display: contents">' + body + "</div>\r\n		test\r\n	</body>\r\n\r\n</html>\r\n",
     error: ({ status, message }) => '<!DOCTYPE html>\n<html lang="en">\n	<head>\n		<meta charset="utf-8" />\n		<title>' + message + `</title>
 
 		<style>
@@ -782,7 +782,7 @@ var options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "nrh6f0"
+  version_hash: "1g2nymp"
 };
 function get_hooks() {
   return {};
@@ -4197,10 +4197,10 @@ var manifest = (() => {
   return {
     appDir: "_app",
     appPath: "_app",
-    assets: /* @__PURE__ */ new Set(["favicon copy.ico", "favicon.ico"]),
-    mimeTypes: { ".ico": "image/vnd.microsoft.icon" },
+    assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png"]),
+    mimeTypes: { ".ico": "image/vnd.microsoft.icon", ".png": "image/png" },
     _: {
-      client: { "start": "_app/immutable/entry/start.0fd919ab.js", "app": "_app/immutable/entry/app.f1850f3a.js", "imports": ["_app/immutable/entry/start.0fd919ab.js", "_app/immutable/chunks/index.9c56d3c2.js", "_app/immutable/chunks/singletons.282a38d2.js", "_app/immutable/entry/app.f1850f3a.js", "_app/immutable/chunks/index.9c56d3c2.js"], "stylesheets": [], "fonts": [] },
+      client: { "start": "_app/immutable/entry/start.805bc1c6.js", "app": "_app/immutable/entry/app.3989f8db.js", "imports": ["_app/immutable/entry/start.805bc1c6.js", "_app/immutable/chunks/index.9c56d3c2.js", "_app/immutable/chunks/singletons.d92916cf.js", "_app/immutable/entry/app.3989f8db.js", "_app/immutable/chunks/index.9c56d3c2.js"], "stylesheets": [], "fonts": [] },
       nodes: [
         __memo(() => Promise.resolve().then(() => (init__(), __exports))),
         __memo(() => Promise.resolve().then(() => (init__2(), __exports2))),
