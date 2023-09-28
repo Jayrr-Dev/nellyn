@@ -739,13 +739,37 @@ const Ballons_animated = create_ssr_component(($$result, $$props, $$bindings, sl
     $$bindings.height(height);
   return `${`<div class="absolute animate-move-up-to-spot"${add_attribute("style", `top: ${balloonTop}px; left: ${balloonLeft}px;`, 0)}><button class="animate-wiggle animate-infinite animate-duration-[3000ms]"><svg xmlns="http://www.w3.org/2000/svg"${add_attribute("width", width, 0)}${add_attribute("height", height, 0)} viewBox="0 0 512 512"><path${add_attribute("fill", stringColor, 0)} d="M418.739 509.346a5.25 5.25 0 0 1-5.25-5.25c0-17.544-6.158-30.82-19.38-41.783c-12.365-10.254-29.586-17.544-47.818-25.262c-24.229-10.257-49.284-20.863-69.091-40.203c-22.826-22.288-33.921-52.182-33.921-91.389a5.25 5.25 0 0 1 10.5 0c0 36.23 10.061 63.666 30.757 83.875c18.388 17.956 42.515 28.169 65.848 38.047c37.853 16.023 73.604 31.159 73.604 76.715a5.249 5.249 0 0 1-5.249 5.25z"></path><path${add_attribute("fill", ballonColor, 0)} d="M259.93 302.848c.476 1.218.938 2.419 1.353 3.576c.401 1.072.768 2.109 1.114 3.091c.342 .983.7 1.912.929 2.77c.466 1.715.428 3.145.242 4.146c-.183 1.001-.538 1.572-.538 1.572c-4.965 8.009-15.482 10.476-23.491 5.511a17.323 17.323 0 0 1-5.511-5.511s-.354-.572-.538-1.572c-.186-1.001-.224-2.43 .242-4.146c.229-.858.586-1.787.929-2.77c.346-.983.713-2.019 1.114-3.091c.415-1.157.877-2.358 1.353-3.576c-34.022-13.918-90.096-81.107-106.883-144.182a123.21 123.21 0 0 1-4.899-34.483C125.347 56.151 180.497 1 248.529 1s123.182 55.151 123.182 123.182a123.21 123.21 0 0 1-4.899 34.483c-16.787 63.075-72.86 130.265-106.882 144.183z"></path><path${add_attribute("fill", highlightColor, 0)} d="M195.957 124.182c0 22.075-10.33 39.97-23.073 39.97s-23.073-17.895-23.073-39.97s10.33-39.97 23.073-39.97c12.743.001 23.073 17.896 23.073 39.97z"></path></svg></button></div>`}`;
 });
+const lightbulb_svelte_svelte_type_style_lang = "";
+const css$1 = {
+  code: ".transition.svelte-1t6u28v{transition:fill 1s ease}",
+  map: null
+};
+const Lightbulb = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let glass = "#c0c0c0";
+  let circleColor = "#ffffff";
+  let filament = "#000000";
+  let bottomRectColor = "#99AAB5";
+  let linesColor = "#CCD6DD";
+  $$result.css.add(css$1);
+  return `
+<button class="bg-blue-500 text-white p-2">Change Colors
+</button>
+<button class="bg-green-500 text-white p-2">Change Glass Color
+</button>
+
+
+<div class="hover:animate-wiggle-more"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><path class="transition svelte-1t6u28v"${add_attribute("fill", glass, 0)} d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06z"></path><path class="animate-none"${add_attribute("fill", circleColor, 0)} d="M22.167 32.5c0 .828-2.234 2.5-4.167 2.5c-1.933 0-4.167-1.672-4.167-2.5c0-.828 2.233-.5 4.167-.5c1.933 0 4.167-.328 4.167.5z"></path><path class="animate-none"${add_attribute("fill", filament, 0)} d="M22.707 10.293a.999.999 0 0 0-1.414 0L18 13.586l-3.293-3.293a.999.999 0 1 0-1.414 1.414L17 15.414V26a1 1 0 1 0 2 0V15.414l3.707-3.707a.999.999 0 0 0 0-1.414z"></path><path class="animate-none"${add_attribute("fill", bottomRectColor, 0)} d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12v6z"></path><path class="animate-none"${add_attribute("fill", linesColor, 0)} d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014zm0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014z"></path></svg></div>
+
+`;
+});
 const _page_svelte_svelte_type_style_lang = "";
 const css = {
   code: ".background.svelte-156l6yv{background:linear-gradient(250deg, rgb(50, 50, 255), rgb(150, 150, 250));display:flex;flex-direction:column;height:100vh;justify-content:center;align-items:center;overflow:hidden}",
   map: null
 };
 const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  const numOfBallons = Math.floor(Math.random() * 16) + 5;
+  const config = { runtime: "edge" };
+  const numOfBallons = Math.floor(Math.random() * 10) + 5;
   const ballonsArray = Array.from({ length: numOfBallons }, (_, i2) => i2 + 1);
   const messages = [
     "Hello, world!",
@@ -753,12 +777,15 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
     "This is only a test.",
     "If this were a real message, it would have content."
   ];
+  if ($$props.config === void 0 && $$bindings.config && config !== void 0)
+    $$bindings.config(config);
   $$result.css.add(css);
   return `${validate_component(Typewriter, "Typewriter").$$render($$result, { messages, speed: "3" }, {}, {})}
 
 <button>Toggle</button>
 
-<section class="background h-[200vh] overflow-hidden svelte-156l6yv">${each(ballonsArray, (_, i) => {
+<section class="background h-[200vh] overflow-hidden svelte-156l6yv">${validate_component(Lightbulb, "Lightbulb").$$render($$result, {}, {}, {})}
+  ${each(ballonsArray, (_, i) => {
     return `${validate_component(Ballons_animated, "BallonsAnimated").$$render($$result, { key: i }, {}, {})}`;
   })}
 </section>`;

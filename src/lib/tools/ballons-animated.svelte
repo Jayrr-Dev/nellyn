@@ -89,7 +89,7 @@
     style={`top: ${balloonTop}px; left: ${balloonLeft}px;`}
   >
     <button
-      on:click={popBalloon}
+      on:mouseenter={popBalloon}
       on:click={playSound}
       class="animate-wiggle animate-infinite animate-duration-[3000ms]"
     >

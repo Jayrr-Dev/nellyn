@@ -8,16 +8,23 @@
   import Motion from "svelte-motion/src/motion/MotionSSR.svelte";
   import Icon from "@iconify/svelte";
   //components
+  import type { Config } from "sveltejs/adapter-vercel";
   import Typewriter from "$lib/tools/typewriter.svelte";
   import BallonsAnimated from "$lib/tools/ballons-animated.svelte";
+  import Lightbulb from "$lib/tools/lightbulb.svelte";
   import { onMount } from "svelte";
+
+  export const config: Config = {
+    runtime: "edge",
+  };
+
   let condition = true;
   const variants = {
     visible: { opacity: 1, x: 0 },
     hidden: { opacity: 0, x: -1000 },
   };
   // Generate a random number between 5 to 20 for the number of balloons
-  const numOfBallons: number = Math.floor(Math.random() * 16) + 5;
+  const numOfBallons: number = Math.floor(Math.random() * 10) + 5;
 
   // Create an array of that length
   const ballonsArray: number[] = Array.from(
@@ -39,6 +46,7 @@
 <button on:click={() => (condition = !condition)}>Toggle</button>
 
 <section class="background h-[200vh] overflow-hidden">
+  <Lightbulb />
   {#each ballonsArray as _, i}
     <BallonsAnimated key={i} />
   {/each}
