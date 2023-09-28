@@ -1,0 +1,1 @@
+import{S as t,i as o,s as n}from"../chunks/index.9c56d3c2.js";const a=Object.freeze(Object.defineProperty({__proto__:null},Symbol.toStringTag,{value:"Module"}));class r extends t{constructor(e){super(),o(this,e,null,null,n,{})}}export{r as component,a as universal};
