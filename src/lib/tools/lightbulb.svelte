@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { fade } from "svelte/transition";
 
   // Reactive variables to hold the colors
@@ -37,7 +37,6 @@
   }
 </script>
 
-<!-- Buttons to trigger color changes -->
 <button class="bg-blue-500 text-white p-2" on:click={lightToggle}>
   Change Colors
 </button>
@@ -45,7 +44,7 @@
   Change Glass Color
 </button>
 
-<!-- SVG with reactive color variables -->
+SVG with reactive color variables
 <div class="hover:animate-wiggle-more">
   {#key glass}
     <svg
@@ -54,7 +53,6 @@
       height="36"
       viewBox="0 0 36 36"
     >
-      <!-- ... your SVG paths with class 'transition' added -->
       <path
         class="transition"
         fill={glass}
@@ -80,15 +78,12 @@
         fill={linesColor}
         d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014zm0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014z"
       />
-
-      <!-- ... the rest of your SVG -->
     </svg>
   {/key}
 </div>
 
-<!-- Styles to handle transition -->
 <style>
   .transition {
     transition: fill 1s ease;
   }
-</style>
+</style> -->

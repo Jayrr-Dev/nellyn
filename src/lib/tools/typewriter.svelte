@@ -1,5 +1,4 @@
-<!-- Typewriter.svelte -->
-
+<!-- 
 <script lang="ts">
   import { onMount } from "svelte";
   export let speed: number = 1.5;
@@ -7,7 +6,6 @@
   export let time: number = 2500;
   let i: number = 0;
 
-  // Typewriter transition function
   export function typewriter(
     node: HTMLElement,
     { speed = 1 }
@@ -51,5 +49,4 @@
     {messages[i]}
   </p>
 {/key}
-
-<!-- <Typewriter {messages} /> -->
+ -->
