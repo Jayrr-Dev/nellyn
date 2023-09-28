@@ -488,7 +488,9 @@ var init_layout_svelte = __esm({
   ".svelte-kit/output/server/entries/pages/_layout.svelte.js"() {
     init_chunks();
     Layout = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      return ``;
+      return `${$$result.head += `<!-- HEAD_svelte-1yq19x8_START -->${$$result.title = `<title>SvelteKit Deployment Configuration</title>`, ""}<meta name="description" content="Learn how to configuration your SvelteKit app to use Edge Functions, Serverless Functions, and Incremental Static Regeneration on Vercel"><!-- HEAD_svelte-1yq19x8_END -->`, ""}
+
+${slots.default ? slots.default({}) : ``}`;
     });
   }
 });
@@ -511,8 +513,8 @@ var init__ = __esm({
     index = 0;
     component = async () => component_cache ?? (component_cache = (await Promise.resolve().then(() => (init_layout_svelte(), layout_svelte_exports))).default);
     universal_id = "src/routes/+layout.ts";
-    imports = ["_app/immutable/nodes/0.4299fe74.js", "_app/immutable/chunks/index.9c56d3c2.js"];
-    stylesheets = [];
+    imports = ["_app/immutable/nodes/0.5754ebf8.js", "_app/immutable/chunks/index.55486355.js"];
+    stylesheets = ["_app/immutable/assets/0.e3b0c442.css"];
     fonts = [];
   }
 });
@@ -571,7 +573,7 @@ var init__2 = __esm({
   ".svelte-kit/output/server/nodes/1.js"() {
     index2 = 1;
     component2 = async () => component_cache2 ?? (component_cache2 = (await Promise.resolve().then(() => (init_error_svelte(), error_svelte_exports))).default);
-    imports2 = ["_app/immutable/nodes/1.6e72d8d9.js", "_app/immutable/chunks/index.9c56d3c2.js", "_app/immutable/chunks/singletons.d92916cf.js"];
+    imports2 = ["_app/immutable/nodes/1.d2dcbbe8.js", "_app/immutable/chunks/index.55486355.js", "_app/immutable/chunks/singletons.e87ab4d2.js"];
     stylesheets2 = [];
     fonts2 = [];
   }
@@ -607,7 +609,7 @@ var init__3 = __esm({
   ".svelte-kit/output/server/nodes/2.js"() {
     index3 = 2;
     component3 = async () => component_cache3 ?? (component_cache3 = (await Promise.resolve().then(() => (init_page_svelte(), page_svelte_exports))).default);
-    imports3 = ["_app/immutable/nodes/2.bedc6433.js", "_app/immutable/chunks/index.9c56d3c2.js"];
+    imports3 = ["_app/immutable/nodes/2.afb50321.js", "_app/immutable/chunks/index.55486355.js"];
     stylesheets3 = [];
     fonts3 = [];
   }
@@ -782,7 +784,7 @@ var options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "1g2nymp"
+  version_hash: "1e5kv16"
 };
 function get_hooks() {
   return {};
@@ -4200,7 +4202,7 @@ var manifest = (() => {
     assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png"]),
     mimeTypes: { ".ico": "image/vnd.microsoft.icon", ".png": "image/png" },
     _: {
-      client: { "start": "_app/immutable/entry/start.805bc1c6.js", "app": "_app/immutable/entry/app.3989f8db.js", "imports": ["_app/immutable/entry/start.805bc1c6.js", "_app/immutable/chunks/index.9c56d3c2.js", "_app/immutable/chunks/singletons.d92916cf.js", "_app/immutable/entry/app.3989f8db.js", "_app/immutable/chunks/index.9c56d3c2.js"], "stylesheets": [], "fonts": [] },
+      client: { "start": "_app/immutable/entry/start.20dad3e5.js", "app": "_app/immutable/entry/app.86a52b7c.js", "imports": ["_app/immutable/entry/start.20dad3e5.js", "_app/immutable/chunks/index.55486355.js", "_app/immutable/chunks/singletons.e87ab4d2.js", "_app/immutable/entry/app.86a52b7c.js", "_app/immutable/chunks/index.55486355.js"], "stylesheets": [], "fonts": [] },
       nodes: [
         __memo(() => Promise.resolve().then(() => (init__(), __exports))),
         __memo(() => Promise.resolve().then(() => (init__2(), __exports2))),
