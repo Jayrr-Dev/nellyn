@@ -70,13 +70,6 @@ function run_all(fns) {
 function safe_not_equal(a, b) {
   return a != a ? b == b : a !== b || (a && typeof a === "object" || typeof a === "function");
 }
-function subscribe(store, ...callbacks) {
-  if (store == null) {
-    return noop;
-  }
-  const unsub = store.subscribe(...callbacks);
-  return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
-}
 function set_current_component(component4) {
   current_component = component4;
 }
@@ -88,9 +81,6 @@ function get_current_component() {
 function setContext(key2, context) {
   get_current_component().$$.context.set(key2, context);
   return context;
-}
-function getContext(key2) {
-  return get_current_component().$$.context.get(key2);
 }
 function escape(value, is_attr = false) {
   const str = String(value);
@@ -526,48 +516,23 @@ var init__ = __esm({
     index = 0;
     component = async () => component_cache ?? (component_cache = (await Promise.resolve().then(() => (init_layout_svelte(), layout_svelte_exports))).default);
     universal_id = "src/routes/+layout.ts";
-    imports = ["_app/immutable/nodes/0.415a4487.js", "_app/immutable/chunks/index.14cc8d2a.js"];
+    imports = ["_app/immutable/nodes/0.bd169624.js", "_app/immutable/chunks/index.e8302bb8.js"];
     stylesheets = ["_app/immutable/assets/0.84f53a77.css"];
     fonts = [];
   }
 });
 
-// .svelte-kit/output/server/entries/fallbacks/error.svelte.js
+// .svelte-kit/output/server/entries/pages/_error.svelte.js
 var error_svelte_exports = {};
 __export(error_svelte_exports, {
-  default: () => Error$1
+  default: () => Error2
 });
-var getStores, page, Error$1;
+var Error2;
 var init_error_svelte = __esm({
-  ".svelte-kit/output/server/entries/fallbacks/error.svelte.js"() {
+  ".svelte-kit/output/server/entries/pages/_error.svelte.js"() {
     init_chunks();
-    getStores = () => {
-      const stores = getContext("__svelte__");
-      return {
-        /** @type {typeof page} */
-        page: {
-          subscribe: stores.page.subscribe
-        },
-        /** @type {typeof navigating} */
-        navigating: {
-          subscribe: stores.navigating.subscribe
-        },
-        /** @type {typeof updated} */
-        updated: stores.updated
-      };
-    };
-    page = {
-      subscribe(fn) {
-        const store = getStores().page;
-        return store.subscribe(fn);
-      }
-    };
-    Error$1 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      let $page, $$unsubscribe_page;
-      $$unsubscribe_page = subscribe(page, (value) => $page = value);
-      $$unsubscribe_page();
-      return `<h1>${escape($page.status)}</h1>
-<p>${escape($page.error?.message)}</p>`;
+    Error2 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+      return `Error page`;
     });
   }
 });
@@ -586,7 +551,7 @@ var init__2 = __esm({
   ".svelte-kit/output/server/nodes/1.js"() {
     index2 = 1;
     component2 = async () => component_cache2 ?? (component_cache2 = (await Promise.resolve().then(() => (init_error_svelte(), error_svelte_exports))).default);
-    imports2 = ["_app/immutable/nodes/1.6d2fa7a6.js", "_app/immutable/chunks/index.14cc8d2a.js", "_app/immutable/chunks/singletons.75edb4e4.js", "_app/immutable/chunks/index.df3a4ca5.js"];
+    imports2 = ["_app/immutable/nodes/1.672174e9.js", "_app/immutable/chunks/index.e8302bb8.js"];
     stylesheets2 = [];
     fonts2 = [];
   }
@@ -2627,7 +2592,7 @@ var init__3 = __esm({
   ".svelte-kit/output/server/nodes/2.js"() {
     index3 = 2;
     component3 = async () => component_cache3 ?? (component_cache3 = (await Promise.resolve().then(() => (init_page_svelte(), page_svelte_exports))).default);
-    imports3 = ["_app/immutable/nodes/2.3946a3f8.js", "_app/immutable/chunks/index.14cc8d2a.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.df3a4ca5.js"];
+    imports3 = ["_app/immutable/nodes/2.6fb95f8c.js", "_app/immutable/chunks/index.e8302bb8.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.77bec820.js"];
     stylesheets3 = ["_app/immutable/assets/2.f39b8ce1.css"];
     fonts3 = [];
   }
@@ -2652,7 +2617,7 @@ function afterUpdate() {
 }
 var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { stores } = $$props;
-  let { page: page2 } = $$props;
+  let { page } = $$props;
   let { constructors } = $$props;
   let { components = [] } = $$props;
   let { form } = $$props;
@@ -2664,8 +2629,8 @@ var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   afterUpdate(stores.page.notify);
   if ($$props.stores === void 0 && $$bindings.stores && stores !== void 0)
     $$bindings.stores(stores);
-  if ($$props.page === void 0 && $$bindings.page && page2 !== void 0)
-    $$bindings.page(page2);
+  if ($$props.page === void 0 && $$bindings.page && page !== void 0)
+    $$bindings.page(page);
   if ($$props.constructors === void 0 && $$bindings.constructors && constructors !== void 0)
     $$bindings.constructors(constructors);
   if ($$props.components === void 0 && $$bindings.components && components !== void 0)
@@ -2681,7 +2646,7 @@ var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   do {
     $$settled = true;
     {
-      stores.page.set(page2);
+      stores.page.set(page);
     }
     $$rendered = `
 
@@ -2802,7 +2767,7 @@ var options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "jcggy8"
+  version_hash: "sgzk0o"
 };
 function get_hooks() {
   return {};
@@ -3471,8 +3436,8 @@ function allowed_methods(mod) {
   return allowed;
 }
 function static_error_page(options2, status, message) {
-  let page2 = options2.templates.error({ status, message });
-  return text(page2, {
+  let page = options2.templates.error({ status, message });
+  return text(page, {
     headers: { "content-type": "text/html; charset=utf-8" },
     status
   });
@@ -4127,7 +4092,7 @@ function writable(value, start = noop) {
   function update(fn) {
     set(fn(value));
   }
-  function subscribe2(run2, invalidate = noop) {
+  function subscribe(run2, invalidate = noop) {
     const subscriber = [run2, invalidate];
     subscribers.add(subscriber);
     if (subscribers.size === 1) {
@@ -4142,7 +4107,7 @@ function writable(value, start = noop) {
       }
     };
   }
-  return { set, update, subscribe: subscribe2 };
+  return { set, update, subscribe };
 }
 function hash(...values) {
   let hash2 = 5381;
@@ -5258,7 +5223,7 @@ function get_data_json(event, options2, nodes) {
   }
 }
 var MAX_DEPTH = 10;
-async function render_page(event, page2, options2, manifest2, state, resolve_opts) {
+async function render_page(event, page, options2, manifest2, state, resolve_opts) {
   if (state.depth > MAX_DEPTH) {
     return text(`Not found: ${event.url.pathname}`, {
       status: 404
@@ -5266,14 +5231,14 @@ async function render_page(event, page2, options2, manifest2, state, resolve_opt
     });
   }
   if (is_action_json_request(event)) {
-    const node = await manifest2._.nodes[page2.leaf]();
+    const node = await manifest2._.nodes[page.leaf]();
     return handle_action_json_request(event, options2, node?.server);
   }
   try {
     const nodes = await Promise.all([
       // we use == here rather than === because [undefined] serializes as "[null]"
-      ...page2.layouts.map((n) => n == void 0 ? n : manifest2._.nodes[n]()),
-      manifest2._.nodes[page2.leaf]()
+      ...page.layouts.map((n) => n == void 0 ? n : manifest2._.nodes[n]()),
+      manifest2._.nodes[page.leaf]()
     ]);
     const leaf_node = (
       /** @type {import('types').SSRNode} */
@@ -5419,10 +5384,10 @@ async function render_page(event, page2, options2, manifest2, state, resolve_opt
           const status2 = err instanceof HttpError ? err.status : 500;
           const error2 = await handle_error_and_jsonify(event, options2, err);
           while (i--) {
-            if (page2.errors[i]) {
+            if (page.errors[i]) {
               const index4 = (
                 /** @type {number} */
-                page2.errors[i]
+                page.errors[i]
               );
               const node2 = await manifest2._.nodes[index4]();
               let j = i;
@@ -6220,7 +6185,7 @@ var manifest = (() => {
     assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png"]),
     mimeTypes: { ".ico": "image/vnd.microsoft.icon", ".png": "image/png" },
     _: {
-      client: { "start": "_app/immutable/entry/start.324657ad.js", "app": "_app/immutable/entry/app.c85c1279.js", "imports": ["_app/immutable/entry/start.324657ad.js", "_app/immutable/chunks/index.14cc8d2a.js", "_app/immutable/chunks/singletons.75edb4e4.js", "_app/immutable/chunks/index.df3a4ca5.js", "_app/immutable/entry/app.c85c1279.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.14cc8d2a.js"], "stylesheets": [], "fonts": [] },
+      client: { "start": "_app/immutable/entry/start.162139f8.js", "app": "_app/immutable/entry/app.3dfc5f2b.js", "imports": ["_app/immutable/entry/start.162139f8.js", "_app/immutable/chunks/index.e8302bb8.js", "_app/immutable/chunks/index.77bec820.js", "_app/immutable/entry/app.3dfc5f2b.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.e8302bb8.js"], "stylesheets": [], "fonts": [] },
       nodes: [
         __memo(() => Promise.resolve().then(() => (init__(), __exports))),
         __memo(() => Promise.resolve().then(() => (init__2(), __exports2))),
