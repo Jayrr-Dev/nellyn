@@ -1,20 +1,18 @@
-<!-- <script lang="ts">
+<script lang="ts">
   // @ts-nocheck
 
   // usually this import strategy should work:
   //import {Motion} from "svelte-motion";
-  import { draw } from "svelte/transition";
-  import { quintOut } from "svelte/easing";
-  import Motion from "svelte-motion/src/motion/MotionSSR.svelte";
-  import Icon from "@iconify/svelte";
+  // import { draw } from "svelte/transition";
+  // import { quintOut } from "svelte/easing";
+  // import Motion from "svelte-motion/src/motion/MotionSSR.svelte";
+  // import Icon from "@iconify/svelte";
   //components
   import type { Config } from "sveltejs/adapter-vercel";
   import Typewriter from "$lib/tools/typewriter.svelte";
   import BallonsAnimated from "$lib/tools/ballons-animated.svelte";
   import Lightbulb from "$lib/tools/lightbulb.svelte";
   import { onMount } from "svelte";
-
-
 
   let condition = true;
   const variants = {
@@ -69,4 +67,4 @@
     height: 100px;
     background-color: white;
   }
-</style> -->
+</style>
