@@ -1,5 +1,5 @@
 {
-	"runtime": "nodejs18.x",
+	"runtime": "nodejs16.x",
 	"handler": "..\\..\\..\\..\\..\\..\\..\\..\\Users\\ssori\\OneDrive\\Projects\\Adrianna Birthday Project\\nellyn\\nellyn\\.svelte-kit\\vercel-tmp\\index.js",
 	"launcherType": "Nodejs",
 	"experimentalResponseStreaming": true
