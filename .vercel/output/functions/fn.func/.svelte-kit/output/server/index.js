@@ -1,6 +1,6 @@
 import { b as base, a as assets, r as reset, p as public_env, o as options, s as set_private_env, c as set_public_env, g as get_hooks } from "./chunks/internal.js";
 import * as devalue from "devalue";
-import { n as noop, s as safe_not_equal } from "./chunks/index.js";
+import { n as noop, b as safe_not_equal } from "./chunks/index.js";
 import { parse, serialize } from "cookie";
 import * as set_cookie_parser from "set-cookie-parser";
 const DEV = false;

@@ -101,12 +101,12 @@ function create_ssr_component(fn) {
 }
 export {
   setContext as a,
-  subscribe as b,
+  safe_not_equal as b,
   create_ssr_component as c,
   escape as e,
   getContext as g,
   missing_component as m,
   noop as n,
-  safe_not_equal as s,
+  subscribe as s,
   validate_component as v
 };
