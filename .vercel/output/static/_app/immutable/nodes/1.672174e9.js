@@ -1,1 +1,0 @@
-import{S as s,i as n,s as i,q as c,r as p,b as l,I as e,h as m}from"../chunks/index.e8302bb8.js";function u(a){let t;return{c(){t=c("Error page")},l(r){t=p(r,"Error page")},m(r,o){l(r,t,o)},p:e,i:e,o:e,d(r){r&&m(t)}}}class x extends s{constructor(t){super(),n(this,t,null,u,i,{})}}export{x as component};

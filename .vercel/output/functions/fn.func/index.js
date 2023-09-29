@@ -70,6 +70,13 @@ function run_all(fns) {
 function safe_not_equal(a, b) {
   return a != a ? b == b : a !== b || (a && typeof a === "object" || typeof a === "function");
 }
+function subscribe(store, ...callbacks) {
+  if (store == null) {
+    return noop;
+  }
+  const unsub = store.subscribe(...callbacks);
+  return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
+}
 function set_current_component(component4) {
   current_component = component4;
 }
@@ -81,6 +88,9 @@ function get_current_component() {
 function setContext(key2, context) {
   get_current_component().$$.context.set(key2, context);
   return context;
+}
+function getContext(key2) {
+  return get_current_component().$$.context.get(key2);
 }
 function escape(value, is_attr = false) {
   const str = String(value);
@@ -516,23 +526,48 @@ var init__ = __esm({
     index = 0;
     component = async () => component_cache ?? (component_cache = (await Promise.resolve().then(() => (init_layout_svelte(), layout_svelte_exports))).default);
     universal_id = "src/routes/+layout.ts";
-    imports = ["_app/immutable/nodes/0.bd169624.js", "_app/immutable/chunks/index.e8302bb8.js"];
-    stylesheets = ["_app/immutable/assets/0.84f53a77.css"];
+    imports = ["_app/immutable/nodes/0.1920d8fa.js", "_app/immutable/chunks/index.fcb0ea49.js"];
+    stylesheets = ["_app/immutable/assets/0.0e133d09.css"];
     fonts = [];
   }
 });
 
-// .svelte-kit/output/server/entries/pages/_error.svelte.js
+// .svelte-kit/output/server/entries/fallbacks/error.svelte.js
 var error_svelte_exports = {};
 __export(error_svelte_exports, {
-  default: () => Error2
+  default: () => Error$1
 });
-var Error2;
+var getStores, page, Error$1;
 var init_error_svelte = __esm({
-  ".svelte-kit/output/server/entries/pages/_error.svelte.js"() {
+  ".svelte-kit/output/server/entries/fallbacks/error.svelte.js"() {
     init_chunks();
-    Error2 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      return `Error page`;
+    getStores = () => {
+      const stores = getContext("__svelte__");
+      return {
+        /** @type {typeof page} */
+        page: {
+          subscribe: stores.page.subscribe
+        },
+        /** @type {typeof navigating} */
+        navigating: {
+          subscribe: stores.navigating.subscribe
+        },
+        /** @type {typeof updated} */
+        updated: stores.updated
+      };
+    };
+    page = {
+      subscribe(fn) {
+        const store = getStores().page;
+        return store.subscribe(fn);
+      }
+    };
+    Error$1 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+      let $page, $$unsubscribe_page;
+      $$unsubscribe_page = subscribe(page, (value) => $page = value);
+      $$unsubscribe_page();
+      return `<h1>${escape($page.status)}</h1>
+<p>${escape($page.error?.message)}</p>`;
     });
   }
 });
@@ -551,7 +586,7 @@ var init__2 = __esm({
   ".svelte-kit/output/server/nodes/1.js"() {
     index2 = 1;
     component2 = async () => component_cache2 ?? (component_cache2 = (await Promise.resolve().then(() => (init_error_svelte(), error_svelte_exports))).default);
-    imports2 = ["_app/immutable/nodes/1.672174e9.js", "_app/immutable/chunks/index.e8302bb8.js"];
+    imports2 = ["_app/immutable/nodes/1.774ac66b.js", "_app/immutable/chunks/index.fcb0ea49.js", "_app/immutable/chunks/singletons.4f04fbb8.js", "_app/immutable/chunks/index.de31db7d.js"];
     stylesheets2 = [];
     fonts2 = [];
   }
@@ -2476,41 +2511,11 @@ var page_svelte_exports = {};
 __export(page_svelte_exports, {
   default: () => Page
 });
-function typewriter(node, { speed: speed2 = 1 }) {
-  const valid = node.childNodes.length === 1 && node.childNodes[0].nodeType === Node.TEXT_NODE;
-  if (!valid) {
-    throw new Error("This transition only works on elements with a single text node child");
-  }
-  const text2 = node.textContent || "";
-  const duration = text2.length / (speed2 * 0.01);
-  return {
-    duration,
-    tick: (t) => {
-      const i2 = Math.trunc(text2.length * t);
-      node.textContent = text2.slice(0, i2);
-    }
-  };
-}
-var Typewriter, ballonpop, Ballons_animated, css$1, Lightbulb, css, Page;
+var ballonpop, Ballons_animated, css$1, Lightbulb, css, Page;
 var init_page_svelte = __esm({
   ".svelte-kit/output/server/entries/pages/_page.svelte.js"() {
     init_chunks();
     init_svelte_sound();
-    Typewriter = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      let { speed = 1.5 } = $$props;
-      let { messages = [] } = $$props;
-      let { time = 2500 } = $$props;
-      let i = 0;
-      if ($$props.speed === void 0 && $$bindings.speed && speed !== void 0)
-        $$bindings.speed(speed);
-      if ($$props.messages === void 0 && $$bindings.messages && messages !== void 0)
-        $$bindings.messages(messages);
-      if ($$props.time === void 0 && $$bindings.time && time !== void 0)
-        $$bindings.time(time);
-      if ($$props.typewriter === void 0 && $$bindings.typewriter && typewriter !== void 0)
-        $$bindings.typewriter(typewriter);
-      return `<p class="h-5">${escape(messages[i])}</p>`;
-    });
     ballonpop = "/_app/immutable/assets/ballonpop.12ac8348.wav";
     Ballons_animated = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       let { stringColor = "#597B91" } = $$props;
@@ -2529,7 +2534,7 @@ var init_page_svelte = __esm({
         $$bindings.width(width);
       if ($$props.height === void 0 && $$bindings.height && height !== void 0)
         $$bindings.height(height);
-      return `${`<div class="absolute animate-move-up-to-spot"${add_attribute("style", `top: ${balloonTop}px; left: ${balloonLeft}px;`, 0)}><button class="animate-wiggle animate-infinite animate-duration-[3000ms]"><svg xmlns="http://www.w3.org/2000/svg"${add_attribute("width", width, 0)}${add_attribute("height", height, 0)} viewBox="0 0 512 512"><path${add_attribute("fill", stringColor, 0)} d="M418.739 509.346a5.25 5.25 0 0 1-5.25-5.25c0-17.544-6.158-30.82-19.38-41.783c-12.365-10.254-29.586-17.544-47.818-25.262c-24.229-10.257-49.284-20.863-69.091-40.203c-22.826-22.288-33.921-52.182-33.921-91.389a5.25 5.25 0 0 1 10.5 0c0 36.23 10.061 63.666 30.757 83.875c18.388 17.956 42.515 28.169 65.848 38.047c37.853 16.023 73.604 31.159 73.604 76.715a5.249 5.249 0 0 1-5.249 5.25z"></path><path${add_attribute("fill", ballonColor, 0)} d="M259.93 302.848c.476 1.218.938 2.419 1.353 3.576c.401 1.072.768 2.109 1.114 3.091c.342 .983.7 1.912.929 2.77c.466 1.715.428 3.145.242 4.146c-.183 1.001-.538 1.572-.538 1.572c-4.965 8.009-15.482 10.476-23.491 5.511a17.323 17.323 0 0 1-5.511-5.511s-.354-.572-.538-1.572c-.186-1.001-.224-2.43 .242-4.146c.229-.858.586-1.787.929-2.77c.346-.983.713-2.019 1.114-3.091c.415-1.157.877-2.358 1.353-3.576c-34.022-13.918-90.096-81.107-106.883-144.182a123.21 123.21 0 0 1-4.899-34.483C125.347 56.151 180.497 1 248.529 1s123.182 55.151 123.182 123.182a123.21 123.21 0 0 1-4.899 34.483c-16.787 63.075-72.86 130.265-106.882 144.183z"></path><path${add_attribute("fill", highlightColor, 0)} d="M195.957 124.182c0 22.075-10.33 39.97-23.073 39.97s-23.073-17.895-23.073-39.97s10.33-39.97 23.073-39.97c12.743.001 23.073 17.896 23.073 39.97z"></path></svg></button></div>`}`;
+      return `${`<div class="absolute animate-move-up-to-spot z-20"${add_attribute("style", `top: ${balloonTop}px; left: ${balloonLeft}px;`, 0)}><button class="z-10 rounded-full animate-wiggle animate-infinite animate-duration-[3000ms]"><svg xmlns="http://www.w3.org/2000/svg"${add_attribute("width", width, 0)}${add_attribute("height", height, 0)} viewBox="0 0 512 512"><path${add_attribute("fill", stringColor, 0)} d="M418.739 509.346a5.25 5.25 0 0 1-5.25-5.25c0-17.544-6.158-30.82-19.38-41.783c-12.365-10.254-29.586-17.544-47.818-25.262c-24.229-10.257-49.284-20.863-69.091-40.203c-22.826-22.288-33.921-52.182-33.921-91.389a5.25 5.25 0 0 1 10.5 0c0 36.23 10.061 63.666 30.757 83.875c18.388 17.956 42.515 28.169 65.848 38.047c37.853 16.023 73.604 31.159 73.604 76.715a5.249 5.249 0 0 1-5.249 5.25z"></path><path${add_attribute("fill", ballonColor, 0)} d="M259.93 302.848c.476 1.218.938 2.419 1.353 3.576c.401 1.072.768 2.109 1.114 3.091c.342 .983.7 1.912.929 2.77c.466 1.715.428 3.145.242 4.146c-.183 1.001-.538 1.572-.538 1.572c-4.965 8.009-15.482 10.476-23.491 5.511a17.323 17.323 0 0 1-5.511-5.511s-.354-.572-.538-1.572c-.186-1.001-.224-2.43 .242-4.146c.229-.858.586-1.787.929-2.77c.346-.983.713-2.019 1.114-3.091c.415-1.157.877-2.358 1.353-3.576c-34.022-13.918-90.096-81.107-106.883-144.182a123.21 123.21 0 0 1-4.899-34.483C125.347 56.151 180.497 1 248.529 1s123.182 55.151 123.182 123.182a123.21 123.21 0 0 1-4.899 34.483c-16.787 63.075-72.86 130.265-106.882 144.183z"></path><path${add_attribute("fill", highlightColor, 0)} d="M195.957 124.182c0 22.075-10.33 39.97-23.073 39.97s-23.073-17.895-23.073-39.97s10.33-39.97 23.073-39.97c12.743.001 23.073 17.896 23.073 39.97z"></path></svg></button></div>`}`;
     });
     css$1 = {
       code: ".transition.svelte-1t6u28v{transition:fill 1s ease}",
@@ -2541,39 +2546,50 @@ var init_page_svelte = __esm({
       let filament = "#000000";
       let bottomRectColor = "#99AAB5";
       let linesColor = "#CCD6DD";
+      let xAdjust = 0;
+      let yAdjust = 0;
+      let { mouseFollow = true } = $$props;
+      let { changeColor = false } = $$props;
+      let { lightState = false } = $$props;
+      let { constantlyChangeColor = false } = $$props;
+      let { yPosition = xAdjust } = $$props;
+      let { xPosition = yAdjust } = $$props;
+      let x = yPosition;
+      let y = xPosition - 400;
+      if ($$props.mouseFollow === void 0 && $$bindings.mouseFollow && mouseFollow !== void 0)
+        $$bindings.mouseFollow(mouseFollow);
+      if ($$props.changeColor === void 0 && $$bindings.changeColor && changeColor !== void 0)
+        $$bindings.changeColor(changeColor);
+      if ($$props.lightState === void 0 && $$bindings.lightState && lightState !== void 0)
+        $$bindings.lightState(lightState);
+      if ($$props.constantlyChangeColor === void 0 && $$bindings.constantlyChangeColor && constantlyChangeColor !== void 0)
+        $$bindings.constantlyChangeColor(constantlyChangeColor);
+      if ($$props.yPosition === void 0 && $$bindings.yPosition && yPosition !== void 0)
+        $$bindings.yPosition(yPosition);
+      if ($$props.xPosition === void 0 && $$bindings.xPosition && xPosition !== void 0)
+        $$bindings.xPosition(xPosition);
       $$result.css.add(css$1);
-      return `<button class="bg-blue-500 text-white p-2">Change Colors
-</button>
-<button class="bg-green-500 text-white p-2">Change Glass Color
-</button>
+      return `
+<div class="relative p-16 grid grid-flow-col"${add_attribute("style", `left: ${x - xAdjust}px; top: ${y - yAdjust * 2.15}px;`, 0)}>${lightState ? `<button class="absolute p-20 -z-0 rounded-full animate-fade blur-3xl" style="${"background-color: " + escape(glass, true) + "; top: 2px; left: 2px;"}"></button>` : ``}
+  <button class="z-10 hover:animate-wiggle-more"><svg class="rotate-180" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><path class="transition svelte-1t6u28v"${add_attribute("fill", glass, 0)} d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06z"></path><path class="animate-none"${add_attribute("fill", circleColor, 0)} d="M22.167 32.5c0 .828-2.234 2.5-4.167 2.5c-1.933 0-4.167-1.672-4.167-2.5c0-.828 2.233-.5 4.167-.5c1.933 0 4.167-.328 4.167.5z"></path><path class="animate-none"${add_attribute("fill", filament, 0)} d="M22.707 10.293a.999.999 0 0 0-1.414 0L18 13.586l-3.293-3.293a.999.999 0 1 0-1.414 1.414L17 15.414V26a1 1 0 1 0 2 0V15.414l3.707-3.707a.999.999 0 0 0 0-1.414z"></path><path class="animate-none"${add_attribute("fill", bottomRectColor, 0)} d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12v6z"></path><path class="animate-none"${add_attribute("fill", linesColor, 0)} d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014zm0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014z"></path></svg></button></div>
 
-SVG with reactive color variables
-<div class="hover:animate-wiggle-more"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><path class="transition svelte-1t6u28v"${add_attribute("fill", glass, 0)} d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06z"></path><path class="animate-none"${add_attribute("fill", circleColor, 0)} d="M22.167 32.5c0 .828-2.234 2.5-4.167 2.5c-1.933 0-4.167-1.672-4.167-2.5c0-.828 2.233-.5 4.167-.5c1.933 0 4.167-.328 4.167.5z"></path><path class="animate-none"${add_attribute("fill", filament, 0)} d="M22.707 10.293a.999.999 0 0 0-1.414 0L18 13.586l-3.293-3.293a.999.999 0 1 0-1.414 1.414L17 15.414V26a1 1 0 1 0 2 0V15.414l3.707-3.707a.999.999 0 0 0 0-1.414z"></path><path class="animate-none"${add_attribute("fill", bottomRectColor, 0)} d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12v6z"></path><path class="animate-none"${add_attribute("fill", linesColor, 0)} d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014zm0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014z"></path></svg>
-</div>`;
+`;
     });
     css = {
-      code: ".background.svelte-156l6yv{background:linear-gradient(250deg, rgb(50, 50, 255), rgb(150, 150, 250));display:flex;flex-direction:column;height:100vh;justify-content:center;align-items:center;overflow:hidden}",
+      code: ".background.svelte-1noth81{background:linear-gradient(250deg, rgb(242, 182, 104), rgb(150, 150, 250));display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden}",
       map: null
     };
     Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      const numOfBallons = Math.floor(Math.random() * 10) + 5;
+      const numOfBallons = Math.floor(Math.random() * 20) + 5;
       const ballonsArray = Array.from({ length: numOfBallons }, (_, i2) => i2 + 1);
-      const messages = [
-        "Hello, world!",
-        "This is a test.",
-        "This is only a test.",
-        "If this were a real message, it would have content."
-      ];
       $$result.css.add(css);
-      return `${validate_component(Typewriter, "Typewriter").$$render($$result, { messages, speed: "3" }, {}, {})}
+      return `
 
-<button>Toggle</button>
-
-<section class="background h-[200vh] overflow-hidden svelte-156l6yv">${validate_component(Lightbulb, "Lightbulb").$$render($$result, {}, {}, {})}
-  ${each(ballonsArray, (_, i) => {
+<body class="background h-[200vh] overflow-hidden svelte-1noth81">${each(ballonsArray, (_, i) => {
         return `${validate_component(Ballons_animated, "BallonsAnimated").$$render($$result, { key: i }, {}, {})}`;
       })}
-</section>`;
+  ${validate_component(Lightbulb, "Lightbulb").$$render($$result, { mouseFollow: "" }, {}, {})}
+</body>`;
     });
   }
 });
@@ -2592,8 +2608,8 @@ var init__3 = __esm({
   ".svelte-kit/output/server/nodes/2.js"() {
     index3 = 2;
     component3 = async () => component_cache3 ?? (component_cache3 = (await Promise.resolve().then(() => (init_page_svelte(), page_svelte_exports))).default);
-    imports3 = ["_app/immutable/nodes/2.6fb95f8c.js", "_app/immutable/chunks/index.e8302bb8.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.77bec820.js"];
-    stylesheets3 = ["_app/immutable/assets/2.f39b8ce1.css"];
+    imports3 = ["_app/immutable/nodes/2.756f1252.js", "_app/immutable/chunks/index.fcb0ea49.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.de31db7d.js"];
+    stylesheets3 = ["_app/immutable/assets/2.8218c452.css"];
     fonts3 = [];
   }
 });
@@ -2617,7 +2633,7 @@ function afterUpdate() {
 }
 var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { stores } = $$props;
-  let { page } = $$props;
+  let { page: page2 } = $$props;
   let { constructors } = $$props;
   let { components = [] } = $$props;
   let { form } = $$props;
@@ -2629,8 +2645,8 @@ var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   afterUpdate(stores.page.notify);
   if ($$props.stores === void 0 && $$bindings.stores && stores !== void 0)
     $$bindings.stores(stores);
-  if ($$props.page === void 0 && $$bindings.page && page !== void 0)
-    $$bindings.page(page);
+  if ($$props.page === void 0 && $$bindings.page && page2 !== void 0)
+    $$bindings.page(page2);
   if ($$props.constructors === void 0 && $$bindings.constructors && constructors !== void 0)
     $$bindings.constructors(constructors);
   if ($$props.components === void 0 && $$bindings.components && components !== void 0)
@@ -2646,7 +2662,7 @@ var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   do {
     $$settled = true;
     {
-      stores.page.set(page);
+      stores.page.set(page2);
     }
     $$rendered = `
 
@@ -2705,7 +2721,7 @@ var options = {
   root: Root,
   service_worker: false,
   templates: {
-    app: ({ head, body, assets: assets2, nonce, env }) => '<!DOCTYPE html>\r\n<html lang="en">\r\n	<head>\r\n		<meta charset="utf-8" />\r\n		<link rel="icon" href="' + assets2 + '/favicon.png" />\r\n		<meta name="viewport" content="width=device-width" />\r\n		' + head + '\r\n	</head>\r\n	<body data-sveltekit-preload-data="hover" class="bg-black text-white">\r\n		<div style="display: contents">' + body + "</div>\r\n		test\r\n	</body>\r\n\r\n</html>\r\n",
+    app: ({ head, body, assets: assets2, nonce, env }) => '<!DOCTYPE html>\r\n<html lang="en">\r\n	<head>\r\n		<meta charset="utf-8" />\r\n		<link rel="icon" href="' + assets2 + '/favicon.png" />\r\n		<meta name="viewport" content="width=device-width" />\r\n		' + head + '\r\n	</head>\r\n	<body data-sveltekit-preload-data="hover" class="bg-black text-white">\r\n		<div style="display: contents">' + body + "</div>\r\n		\r\n	</body>\r\n\r\n</html>\r\n",
     error: ({ status, message }) => '<!DOCTYPE html>\n<html lang="en">\n	<head>\n		<meta charset="utf-8" />\n		<title>' + message + `</title>
 
 		<style>
@@ -2767,7 +2783,7 @@ var options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "sgzk0o"
+  version_hash: "1i3sk8u"
 };
 function get_hooks() {
   return {};
@@ -3436,8 +3452,8 @@ function allowed_methods(mod) {
   return allowed;
 }
 function static_error_page(options2, status, message) {
-  let page = options2.templates.error({ status, message });
-  return text(page, {
+  let page2 = options2.templates.error({ status, message });
+  return text(page2, {
     headers: { "content-type": "text/html; charset=utf-8" },
     status
   });
@@ -4092,7 +4108,7 @@ function writable(value, start = noop) {
   function update(fn) {
     set(fn(value));
   }
-  function subscribe(run2, invalidate = noop) {
+  function subscribe2(run2, invalidate = noop) {
     const subscriber = [run2, invalidate];
     subscribers.add(subscriber);
     if (subscribers.size === 1) {
@@ -4107,7 +4123,7 @@ function writable(value, start = noop) {
       }
     };
   }
-  return { set, update, subscribe };
+  return { set, update, subscribe: subscribe2 };
 }
 function hash(...values) {
   let hash2 = 5381;
@@ -5223,7 +5239,7 @@ function get_data_json(event, options2, nodes) {
   }
 }
 var MAX_DEPTH = 10;
-async function render_page(event, page, options2, manifest2, state, resolve_opts) {
+async function render_page(event, page2, options2, manifest2, state, resolve_opts) {
   if (state.depth > MAX_DEPTH) {
     return text(`Not found: ${event.url.pathname}`, {
       status: 404
@@ -5231,14 +5247,14 @@ async function render_page(event, page, options2, manifest2, state, resolve_opts
     });
   }
   if (is_action_json_request(event)) {
-    const node = await manifest2._.nodes[page.leaf]();
+    const node = await manifest2._.nodes[page2.leaf]();
     return handle_action_json_request(event, options2, node?.server);
   }
   try {
     const nodes = await Promise.all([
       // we use == here rather than === because [undefined] serializes as "[null]"
-      ...page.layouts.map((n) => n == void 0 ? n : manifest2._.nodes[n]()),
-      manifest2._.nodes[page.leaf]()
+      ...page2.layouts.map((n) => n == void 0 ? n : manifest2._.nodes[n]()),
+      manifest2._.nodes[page2.leaf]()
     ]);
     const leaf_node = (
       /** @type {import('types').SSRNode} */
@@ -5384,10 +5400,10 @@ async function render_page(event, page, options2, manifest2, state, resolve_opts
           const status2 = err instanceof HttpError ? err.status : 500;
           const error2 = await handle_error_and_jsonify(event, options2, err);
           while (i--) {
-            if (page.errors[i]) {
+            if (page2.errors[i]) {
               const index4 = (
                 /** @type {number} */
-                page.errors[i]
+                page2.errors[i]
               );
               const node2 = await manifest2._.nodes[index4]();
               let j = i;
@@ -6185,7 +6201,7 @@ var manifest = (() => {
     assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png"]),
     mimeTypes: { ".ico": "image/vnd.microsoft.icon", ".png": "image/png" },
     _: {
-      client: { "start": "_app/immutable/entry/start.162139f8.js", "app": "_app/immutable/entry/app.3dfc5f2b.js", "imports": ["_app/immutable/entry/start.162139f8.js", "_app/immutable/chunks/index.e8302bb8.js", "_app/immutable/chunks/index.77bec820.js", "_app/immutable/entry/app.3dfc5f2b.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.e8302bb8.js"], "stylesheets": [], "fonts": [] },
+      client: { "start": "_app/immutable/entry/start.d0195114.js", "app": "_app/immutable/entry/app.1f6b8bcb.js", "imports": ["_app/immutable/entry/start.d0195114.js", "_app/immutable/chunks/index.fcb0ea49.js", "_app/immutable/chunks/singletons.4f04fbb8.js", "_app/immutable/chunks/index.de31db7d.js", "_app/immutable/entry/app.1f6b8bcb.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.fcb0ea49.js"], "stylesheets": [], "fonts": [] },
       nodes: [
         __memo(() => Promise.resolve().then(() => (init__(), __exports))),
         __memo(() => Promise.resolve().then(() => (init__2(), __exports2))),

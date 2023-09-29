@@ -8,6 +8,7 @@
   export let width: string = "100";
   export let height: string = "100";
   import { poppedBalloonCount } from "$lib/stores";
+
   import ballonpop from "$lib/sounds/ballonpop.wav";
   let isPopped: boolean = false;
 
@@ -28,6 +29,7 @@
 
   let balloonTop: number = 0;
   let balloonLeft: number = 0;
+
   // Function to generate random position for the balloon
   function setRandomBalloonPosition() {
     const screenWidth = window.innerWidth;
@@ -36,10 +38,11 @@
     balloonTop = Math.random() * (screenHeight - 100); // Subtracting 100 to make sure the entire balloon fits in the screen
     balloonLeft = Math.random() * (screenWidth - 100); // Subtracting 100 to make sure the entire balloon fits in the screen
   }
+
   // Function to get the mouse position
   function getMousePosition(event: MouseEvent) {
-    x = event.clientX;
-    y = event.clientY;
+    x = event.pageX;
+    y = event.pageY;
   }
 
   function popBalloon() {
@@ -54,22 +57,68 @@
 
   // Add event listener to get the mouse position
   onMount(() => {
-    setRandomBalloonPosition();
     window.addEventListener("mousemove", getMousePosition);
     // window.addEventListener("click", setSVGPosition);
     // Change the balloon color when the component is created
     ballonColor = getRandomColor();
+    setRandomBalloonPosition();
+    // Function for linear interpolation
+    function lerp(start: number, end: number, t: number): number {
+      return start * (1 - t) + end * t;
+    }
+
+    function randomMovements() {
+      let time = Math.random() * 10; // Random initial time
+      let frequencyX = Math.random() * 0.2 + 0.8; // Random frequency for X
+      let frequencyY = Math.random() * 0.2 + 0.8; // Random frequency for Y
+      let currentX = balloonLeft;
+      let currentY = balloonTop;
+      let targetX = balloonLeft;
+      let targetY = balloonTop;
+
+      // Animation function
+      const animate = () => {
+        time += 0.001; // Decreased time increment for slower animation
+
+        // Update target position based on some function (e.g., sine and cosine)
+        targetX =
+          balloonLeft +
+          Math.cos(time * frequencyX) * 50 +
+          Math.sin(time * 0.9) * 25;
+        targetY =
+          balloonTop +
+          Math.cos(time * frequencyY) * 50 +
+          Math.cos(time * 1.1) * 25;
+
+        // Smoothly interpolate between the current and target positions
+        currentX = lerp(currentX, targetX, 0.01); // Smaller smoothing factor for smoother animation
+        currentY = lerp(currentY, targetY, 0.01);
+
+        // Apply the new interpolated position
+        balloonLeft = currentX;
+        balloonTop = currentY;
+
+        // Request the next animation frame
+        requestAnimationFrame(animate);
+      };
+
+      // Start the animation
+      animate();
+    }
+    setTimeout(() => {
+      randomMovements();
+    }, 2000);
   });
 
   // Array of colors to choose from
   const colors = [
-    "#FF0000",
-    "#00FF00",
-    "#0000FF",
-    "#FFFF00",
-    "#00FFFF",
-    "#FF00FF",
-    "#FF5733",
+    "rgba(255, 0, 0, 0.5)",
+    "rgba(0, 255, 0, 0.5)",
+    "rgba(0, 0, 255, 0.5)",
+    "rgba(255, 255, 0, 0.5)",
+    "rgba(0, 255, 255, 0.5)",
+    "rgba(255, 0, 255, 0.5)",
+    "rgba(255, 87, 51, 0.5)",
   ];
 
   // Function to get a random color from the array
@@ -85,13 +134,13 @@
 
 {#if !isPopped}
   <div
-    class="absolute animate-move-up-to-spot"
+    class="absolute animate-move-up-to-spot z-20"
     style={`top: ${balloonTop}px; left: ${balloonLeft}px;`}
   >
     <button
-      on:mouseenter={popBalloon}
+      on:mouseup={popBalloon}
       on:click={playSound}
-      class="animate-wiggle animate-infinite animate-duration-[3000ms]"
+      class="z-10 rounded-full animate-wiggle animate-infinite animate-duration-[3000ms]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

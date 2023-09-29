@@ -12,6 +12,7 @@
   import Typewriter from "$lib/tools/typewriter.svelte";
   import BallonsAnimated from "$lib/tools/ballons-animated.svelte";
   import Lightbulb from "$lib/tools/lightbulb.svelte";
+  import RandomMover from "$lib/tools/random-mover.svelte";
   import { onMount } from "svelte";
 
   let condition = true;
@@ -20,7 +21,7 @@
     hidden: { opacity: 0, x: -1000 },
   };
   // Generate a random number between 5 to 20 for the number of balloons
-  const numOfBallons: number = Math.floor(Math.random() * 10) + 5;
+  const numOfBallons: number = Math.floor(Math.random() * 20) + 5;
 
   // Create an array of that length
   const ballonsArray: number[] = Array.from(
@@ -37,34 +38,28 @@
   ];
 </script>
 
-<Typewriter {messages} speed="3" />
+<!-- <Typewriter {messages} speed="3" />
 
-<button on:click={() => (condition = !condition)}>Toggle</button>
+<button on:click={() => (condition = !condition)}>Toggle</button> -->
 
-<section class="background h-[200vh] overflow-hidden">
-  <Lightbulb />
+<body class=" background h-[200vh] overflow-hidden">
   {#each ballonsArray as _, i}
     <BallonsAnimated key={i} />
   {/each}
-</section>
+  <Lightbulb mouseFollow="" />
+</body>
 
 <style>
   /* :global(*) {
     box-sizing: border-box;
   } */
   .background {
-    background: linear-gradient(250deg, rgb(50, 50, 255), rgb(150, 150, 250));
+    background: linear-gradient(250deg, rgb(242, 182, 104), rgb(150, 150, 250));
     display: flex;
     flex-direction: column;
-    height: 100vh;
+
     justify-content: center;
     align-items: center;
     overflow: hidden;
-  }
-  .box {
-    margin: 2rem;
-    width: 100px;
-    height: 100px;
-    background-color: white;
   }
 </style>
