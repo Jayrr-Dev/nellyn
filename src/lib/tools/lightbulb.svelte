@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, beforeUpdate } from "svelte";
+  import { lightstates } from "$lib/stores";
   // Reactive variables to hold the colors
   let glass = "#c0c0c0";
   let circleColor = "#ffffff";
@@ -17,6 +18,12 @@
   export let xPosition: number = yAdjust;
   // Color palette for random colors
   const randomColor = ["#003049", "#d62828", "#f77f00", "#fcbf49", "#eae2b7"];
+
+  // Subscribe to lightState store
+  lightstates.subscribe((value) => {
+    lightState = value;
+  });
+
   beforeUpdate(() => {
     // Add event listener to get the mouse position
     if (lightState) {
@@ -41,6 +48,7 @@
 
   function lightToggle() {
     lightState = !lightState;
+    lightstates.update((n) => !n);
     if (!lightState) {
       glass = "#c0c0c0";
       circleColor = "#ffffff";
@@ -58,7 +66,7 @@
 
   // Variables to hold the mouse x and y positions
   let x = yPosition;
-  let y = xPosition - 400;
+  let y = xPosition - 300;
 
   // Function to update x and y on mousemove
   function handleMouseMove(event: MouseEvent | TouchEvent) {
@@ -99,7 +107,7 @@
         viewBox="0 0 36 36"
       >
         <path
-          class="transition"
+          class="transition z-10"
           fill={glass}
           d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06z"
         />
@@ -118,6 +126,7 @@
           fill={bottomRectColor}
           d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12v6z"
         />
+
         <path
           class="animate-none"
           fill={linesColor}
