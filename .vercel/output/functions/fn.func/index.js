@@ -55,7 +55,7 @@ var __privateSet = (obj, member, value, setter) => {
   return value;
 };
 
-// .svelte-kit/output/server/chunks/index.js
+// .svelte-kit/output/server/chunks/index2.js
 function noop() {
 }
 function run(fn) {
@@ -77,6 +77,11 @@ function subscribe(store, ...callbacks) {
   const unsub = store.subscribe(...callbacks);
   return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
 }
+function custom_event(type, detail, { bubbles = false, cancelable = false } = {}) {
+  const e = document.createEvent("CustomEvent");
+  e.initCustomEvent(type, bubbles, cancelable, detail);
+  return e;
+}
 function set_current_component(component4) {
   current_component = component4;
 }
@@ -85,12 +90,85 @@ function get_current_component() {
     throw new Error("Function called outside component initialization");
   return current_component;
 }
+function onDestroy(fn) {
+  get_current_component().$$.on_destroy.push(fn);
+}
+function createEventDispatcher() {
+  const component4 = get_current_component();
+  return (type, detail, { cancelable = false } = {}) => {
+    const callbacks = component4.$$.callbacks[type];
+    if (callbacks) {
+      const event = custom_event(type, detail, { cancelable });
+      callbacks.slice().forEach((fn) => {
+        fn.call(component4, event);
+      });
+      return !event.defaultPrevented;
+    }
+    return true;
+  };
+}
 function setContext(key2, context) {
   get_current_component().$$.context.set(key2, context);
   return context;
 }
 function getContext(key2) {
   return get_current_component().$$.context.get(key2);
+}
+function spread(args, attrs_to_add) {
+  const attributes = Object.assign({}, ...args);
+  if (attrs_to_add) {
+    const classes_to_add = attrs_to_add.classes;
+    const styles_to_add = attrs_to_add.styles;
+    if (classes_to_add) {
+      if (attributes.class == null) {
+        attributes.class = classes_to_add;
+      } else {
+        attributes.class += " " + classes_to_add;
+      }
+    }
+    if (styles_to_add) {
+      if (attributes.style == null) {
+        attributes.style = style_object_to_string(styles_to_add);
+      } else {
+        attributes.style = style_object_to_string(merge_ssr_styles(attributes.style, styles_to_add));
+      }
+    }
+  }
+  let str = "";
+  Object.keys(attributes).forEach((name) => {
+    if (invalid_attribute_name_character.test(name))
+      return;
+    const value = attributes[name];
+    if (value === true)
+      str += " " + name;
+    else if (boolean_attributes.has(name.toLowerCase())) {
+      if (value)
+        str += " " + name;
+    } else if (value != null) {
+      str += ` ${name}="${value}"`;
+    }
+  });
+  return str;
+}
+function merge_ssr_styles(style_attribute, style_directive) {
+  const style_object = {};
+  for (const individual_style of style_attribute.split(";")) {
+    const colon_index = individual_style.indexOf(":");
+    const name = individual_style.slice(0, colon_index).trim();
+    const value = individual_style.slice(colon_index + 1).trim();
+    if (!name)
+      continue;
+    style_object[name] = value;
+  }
+  for (const name in style_directive) {
+    const value = style_directive[name];
+    if (value) {
+      style_object[name] = value;
+    } else {
+      delete style_object[name];
+    }
+  }
+  return style_object;
 }
 function escape(value, is_attr = false) {
   const str = String(value);
@@ -106,12 +184,16 @@ function escape(value, is_attr = false) {
   }
   return escaped2 + str.substring(last);
 }
-function each(items, fn) {
-  let str = "";
-  for (let i = 0; i < items.length; i += 1) {
-    str += fn(items[i], i);
+function escape_attribute_value(value) {
+  const should_escape = typeof value === "string" || value && typeof value === "object";
+  return should_escape ? escape(value, true) : value;
+}
+function escape_object(obj) {
+  const result = {};
+  for (const key2 in obj) {
+    result[key2] = escape_attribute_value(obj[key2]);
   }
-  return str;
+  return result;
 }
 function validate_component(component4, name) {
   if (!component4 || !component4.$$render) {
@@ -163,14 +245,102 @@ function add_attribute(name, value, boolean) {
   const assignment = boolean && value === true ? "" : `="${escape(value, true)}"`;
   return ` ${name}${assignment}`;
 }
-var current_component, ATTR_REGEX, CONTENT_REGEX, missing_component, on_destroy;
-var init_chunks = __esm({
-  ".svelte-kit/output/server/chunks/index.js"() {
+function style_object_to_string(style_object) {
+  return Object.keys(style_object).filter((key2) => style_object[key2]).map((key2) => `${key2}: ${escape_attribute_value(style_object[key2])};`).join(" ");
+}
+var current_component, _boolean_attributes, boolean_attributes, invalid_attribute_name_character, ATTR_REGEX, CONTENT_REGEX, missing_component, on_destroy;
+var init_index2 = __esm({
+  ".svelte-kit/output/server/chunks/index2.js"() {
+    _boolean_attributes = [
+      "allowfullscreen",
+      "allowpaymentrequest",
+      "async",
+      "autofocus",
+      "autoplay",
+      "checked",
+      "controls",
+      "default",
+      "defer",
+      "disabled",
+      "formnovalidate",
+      "hidden",
+      "inert",
+      "ismap",
+      "itemscope",
+      "loop",
+      "multiple",
+      "muted",
+      "nomodule",
+      "novalidate",
+      "open",
+      "playsinline",
+      "readonly",
+      "required",
+      "reversed",
+      "selected"
+    ];
+    boolean_attributes = /* @__PURE__ */ new Set([..._boolean_attributes]);
+    invalid_attribute_name_character = /[\s'">/=\u{FDD0}-\u{FDEF}\u{FFFE}\u{FFFF}\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]/u;
     ATTR_REGEX = /[&"]/g;
     CONTENT_REGEX = /[&<]/g;
     missing_component = {
       $$render: () => ""
     };
+  }
+});
+
+// .svelte-kit/output/server/chunks/index.js
+function readable(value, start) {
+  return {
+    subscribe: writable(value, start).subscribe
+  };
+}
+function writable(value, start = noop) {
+  let stop;
+  const subscribers = /* @__PURE__ */ new Set();
+  function set(new_value) {
+    if (safe_not_equal(value, new_value)) {
+      value = new_value;
+      if (stop) {
+        const run_queue = !subscriber_queue.length;
+        for (const subscriber of subscribers) {
+          subscriber[1]();
+          subscriber_queue.push(subscriber, value);
+        }
+        if (run_queue) {
+          for (let i = 0; i < subscriber_queue.length; i += 2) {
+            subscriber_queue[i][0](subscriber_queue[i + 1]);
+          }
+          subscriber_queue.length = 0;
+        }
+      }
+    }
+  }
+  function update(fn) {
+    set(fn(value));
+  }
+  function subscribe2(run2, invalidate = noop) {
+    const subscriber = [run2, invalidate];
+    subscribers.add(subscriber);
+    if (subscribers.size === 1) {
+      stop = start(set) || noop;
+    }
+    run2(value);
+    return () => {
+      subscribers.delete(subscriber);
+      if (subscribers.size === 0 && stop) {
+        stop();
+        stop = null;
+      }
+    };
+  }
+  return { set, update, subscribe: subscribe2 };
+}
+var subscriber_queue;
+var init_chunks = __esm({
+  ".svelte-kit/output/server/chunks/index.js"() {
+    init_index2();
+    subscriber_queue = [];
   }
 });
 
@@ -499,7 +669,7 @@ __export(layout_svelte_exports, {
 var Layout;
 var init_layout_svelte = __esm({
   ".svelte-kit/output/server/entries/pages/_layout.svelte.js"() {
-    init_chunks();
+    init_index2();
     Layout = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       return `${$$result.head += `<!-- HEAD_svelte-1yq19x8_START -->${$$result.title = `<title>SvelteKit Deployment Configuration</title>`, ""}<meta name="description" content="Learn how to configuration your SvelteKit app to use Edge Functions, Serverless Functions, and Incremental Static Regeneration on Vercel"><!-- HEAD_svelte-1yq19x8_END -->`, ""}
 
@@ -526,8 +696,8 @@ var init__ = __esm({
     index = 0;
     component = async () => component_cache ?? (component_cache = (await Promise.resolve().then(() => (init_layout_svelte(), layout_svelte_exports))).default);
     universal_id = "src/routes/+layout.ts";
-    imports = ["_app/immutable/nodes/0.1920d8fa.js", "_app/immutable/chunks/index.fcb0ea49.js"];
-    stylesheets = ["_app/immutable/assets/0.0e133d09.css"];
+    imports = ["_app/immutable/nodes/0.d060120d.js", "_app/immutable/chunks/index.7df76734.js"];
+    stylesheets = ["_app/immutable/assets/0.805db6cf.css"];
     fonts = [];
   }
 });
@@ -540,7 +710,7 @@ __export(error_svelte_exports, {
 var getStores, page, Error$1;
 var init_error_svelte = __esm({
   ".svelte-kit/output/server/entries/fallbacks/error.svelte.js"() {
-    init_chunks();
+    init_index2();
     getStores = () => {
       const stores = getContext("__svelte__");
       return {
@@ -586,1923 +756,15 @@ var init__2 = __esm({
   ".svelte-kit/output/server/nodes/1.js"() {
     index2 = 1;
     component2 = async () => component_cache2 ?? (component_cache2 = (await Promise.resolve().then(() => (init_error_svelte(), error_svelte_exports))).default);
-    imports2 = ["_app/immutable/nodes/1.774ac66b.js", "_app/immutable/chunks/index.fcb0ea49.js", "_app/immutable/chunks/singletons.4f04fbb8.js", "_app/immutable/chunks/index.de31db7d.js"];
+    imports2 = ["_app/immutable/nodes/1.24b2b90d.js", "_app/immutable/chunks/index.7df76734.js", "_app/immutable/chunks/singletons.f29ac4fb.js", "_app/immutable/chunks/index.33058e4b.js"];
     stylesheets2 = [];
     fonts2 = [];
   }
 });
 
-// node_modules/svelte-sound/dist/howler.core-e669a980.js
-var howler_core_e669a980_exports = {};
-__export(howler_core_e669a980_exports, {
-  h: () => howler_core
-});
-function _mergeNamespaces(n, m) {
-  for (var i = 0; i < m.length; i++) {
-    const e = m[i];
-    if (typeof e !== "string" && !Array.isArray(e)) {
-      for (const k in e) {
-        if (k !== "default" && !(k in n)) {
-          const d = Object.getOwnPropertyDescriptor(e, k);
-          if (d) {
-            Object.defineProperty(n, k, d.get ? d : {
-              enumerable: true,
-              get: () => e[k]
-            });
-          }
-        }
-      }
-    }
-  }
-  return Object.freeze(Object.defineProperty(n, Symbol.toStringTag, { value: "Module" }));
-}
-var commonjsGlobal, howler_core$1, howler_core;
-var init_howler_core_e669a980 = __esm({
-  "node_modules/svelte-sound/dist/howler.core-e669a980.js"() {
-    commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
-    howler_core$1 = {};
-    (function(exports) {
-      (function() {
-        var HowlerGlobal = function() {
-          this.init();
-        };
-        HowlerGlobal.prototype = {
-          /**
-           * Initialize the global Howler object.
-           * @return {Howler}
-           */
-          init: function() {
-            var self2 = this || Howler;
-            self2._counter = 1e3;
-            self2._html5AudioPool = [];
-            self2.html5PoolSize = 10;
-            self2._codecs = {};
-            self2._howls = [];
-            self2._muted = false;
-            self2._volume = 1;
-            self2._canPlayEvent = "canplaythrough";
-            self2._navigator = typeof window !== "undefined" && window.navigator ? window.navigator : null;
-            self2.masterGain = null;
-            self2.noAudio = false;
-            self2.usingWebAudio = true;
-            self2.autoSuspend = true;
-            self2.ctx = null;
-            self2.autoUnlock = true;
-            self2._setup();
-            return self2;
-          },
-          /**
-           * Get/set the global volume for all sounds.
-           * @param  {Float} vol Volume from 0.0 to 1.0.
-           * @return {Howler/Float}     Returns self or current volume.
-           */
-          volume: function(vol) {
-            var self2 = this || Howler;
-            vol = parseFloat(vol);
-            if (!self2.ctx) {
-              setupAudioContext();
-            }
-            if (typeof vol !== "undefined" && vol >= 0 && vol <= 1) {
-              self2._volume = vol;
-              if (self2._muted) {
-                return self2;
-              }
-              if (self2.usingWebAudio) {
-                self2.masterGain.gain.setValueAtTime(vol, Howler.ctx.currentTime);
-              }
-              for (var i = 0; i < self2._howls.length; i++) {
-                if (!self2._howls[i]._webAudio) {
-                  var ids = self2._howls[i]._getSoundIds();
-                  for (var j = 0; j < ids.length; j++) {
-                    var sound = self2._howls[i]._soundById(ids[j]);
-                    if (sound && sound._node) {
-                      sound._node.volume = sound._volume * vol;
-                    }
-                  }
-                }
-              }
-              return self2;
-            }
-            return self2._volume;
-          },
-          /**
-           * Handle muting and unmuting globally.
-           * @param  {Boolean} muted Is muted or not.
-           */
-          mute: function(muted) {
-            var self2 = this || Howler;
-            if (!self2.ctx) {
-              setupAudioContext();
-            }
-            self2._muted = muted;
-            if (self2.usingWebAudio) {
-              self2.masterGain.gain.setValueAtTime(muted ? 0 : self2._volume, Howler.ctx.currentTime);
-            }
-            for (var i = 0; i < self2._howls.length; i++) {
-              if (!self2._howls[i]._webAudio) {
-                var ids = self2._howls[i]._getSoundIds();
-                for (var j = 0; j < ids.length; j++) {
-                  var sound = self2._howls[i]._soundById(ids[j]);
-                  if (sound && sound._node) {
-                    sound._node.muted = muted ? true : sound._muted;
-                  }
-                }
-              }
-            }
-            return self2;
-          },
-          /**
-           * Handle stopping all sounds globally.
-           */
-          stop: function() {
-            var self2 = this || Howler;
-            for (var i = 0; i < self2._howls.length; i++) {
-              self2._howls[i].stop();
-            }
-            return self2;
-          },
-          /**
-           * Unload and destroy all currently loaded Howl objects.
-           * @return {Howler}
-           */
-          unload: function() {
-            var self2 = this || Howler;
-            for (var i = self2._howls.length - 1; i >= 0; i--) {
-              self2._howls[i].unload();
-            }
-            if (self2.usingWebAudio && self2.ctx && typeof self2.ctx.close !== "undefined") {
-              self2.ctx.close();
-              self2.ctx = null;
-              setupAudioContext();
-            }
-            return self2;
-          },
-          /**
-           * Check for codec support of specific extension.
-           * @param  {String} ext Audio file extention.
-           * @return {Boolean}
-           */
-          codecs: function(ext) {
-            return (this || Howler)._codecs[ext.replace(/^x-/, "")];
-          },
-          /**
-           * Setup various state values for global tracking.
-           * @return {Howler}
-           */
-          _setup: function() {
-            var self2 = this || Howler;
-            self2.state = self2.ctx ? self2.ctx.state || "suspended" : "suspended";
-            self2._autoSuspend();
-            if (!self2.usingWebAudio) {
-              if (typeof Audio !== "undefined") {
-                try {
-                  var test = new Audio();
-                  if (typeof test.oncanplaythrough === "undefined") {
-                    self2._canPlayEvent = "canplay";
-                  }
-                } catch (e) {
-                  self2.noAudio = true;
-                }
-              } else {
-                self2.noAudio = true;
-              }
-            }
-            try {
-              var test = new Audio();
-              if (test.muted) {
-                self2.noAudio = true;
-              }
-            } catch (e) {
-            }
-            if (!self2.noAudio) {
-              self2._setupCodecs();
-            }
-            return self2;
-          },
-          /**
-           * Check for browser support for various codecs and cache the results.
-           * @return {Howler}
-           */
-          _setupCodecs: function() {
-            var self2 = this || Howler;
-            var audioTest = null;
-            try {
-              audioTest = typeof Audio !== "undefined" ? new Audio() : null;
-            } catch (err) {
-              return self2;
-            }
-            if (!audioTest || typeof audioTest.canPlayType !== "function") {
-              return self2;
-            }
-            var mpegTest = audioTest.canPlayType("audio/mpeg;").replace(/^no$/, "");
-            var ua = self2._navigator ? self2._navigator.userAgent : "";
-            var checkOpera = ua.match(/OPR\/([0-6].)/g);
-            var isOldOpera = checkOpera && parseInt(checkOpera[0].split("/")[1], 10) < 33;
-            var checkSafari = ua.indexOf("Safari") !== -1 && ua.indexOf("Chrome") === -1;
-            var safariVersion = ua.match(/Version\/(.*?) /);
-            var isOldSafari = checkSafari && safariVersion && parseInt(safariVersion[1], 10) < 15;
-            self2._codecs = {
-              mp3: !!(!isOldOpera && (mpegTest || audioTest.canPlayType("audio/mp3;").replace(/^no$/, ""))),
-              mpeg: !!mpegTest,
-              opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ""),
-              ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ""),
-              oga: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ""),
-              wav: !!(audioTest.canPlayType('audio/wav; codecs="1"') || audioTest.canPlayType("audio/wav")).replace(/^no$/, ""),
-              aac: !!audioTest.canPlayType("audio/aac;").replace(/^no$/, ""),
-              caf: !!audioTest.canPlayType("audio/x-caf;").replace(/^no$/, ""),
-              m4a: !!(audioTest.canPlayType("audio/x-m4a;") || audioTest.canPlayType("audio/m4a;") || audioTest.canPlayType("audio/aac;")).replace(/^no$/, ""),
-              m4b: !!(audioTest.canPlayType("audio/x-m4b;") || audioTest.canPlayType("audio/m4b;") || audioTest.canPlayType("audio/aac;")).replace(/^no$/, ""),
-              mp4: !!(audioTest.canPlayType("audio/x-mp4;") || audioTest.canPlayType("audio/mp4;") || audioTest.canPlayType("audio/aac;")).replace(/^no$/, ""),
-              weba: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, "")),
-              webm: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, "")),
-              dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, ""),
-              flac: !!(audioTest.canPlayType("audio/x-flac;") || audioTest.canPlayType("audio/flac;")).replace(/^no$/, "")
-            };
-            return self2;
-          },
-          /**
-           * Some browsers/devices will only allow audio to be played after a user interaction.
-           * Attempt to automatically unlock audio on the first user interaction.
-           * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
-           * @return {Howler}
-           */
-          _unlockAudio: function() {
-            var self2 = this || Howler;
-            if (self2._audioUnlocked || !self2.ctx) {
-              return;
-            }
-            self2._audioUnlocked = false;
-            self2.autoUnlock = false;
-            if (!self2._mobileUnloaded && self2.ctx.sampleRate !== 44100) {
-              self2._mobileUnloaded = true;
-              self2.unload();
-            }
-            self2._scratchBuffer = self2.ctx.createBuffer(1, 1, 22050);
-            var unlock = function(e) {
-              while (self2._html5AudioPool.length < self2.html5PoolSize) {
-                try {
-                  var audioNode = new Audio();
-                  audioNode._unlocked = true;
-                  self2._releaseHtml5Audio(audioNode);
-                } catch (e2) {
-                  self2.noAudio = true;
-                  break;
-                }
-              }
-              for (var i = 0; i < self2._howls.length; i++) {
-                if (!self2._howls[i]._webAudio) {
-                  var ids = self2._howls[i]._getSoundIds();
-                  for (var j = 0; j < ids.length; j++) {
-                    var sound = self2._howls[i]._soundById(ids[j]);
-                    if (sound && sound._node && !sound._node._unlocked) {
-                      sound._node._unlocked = true;
-                      sound._node.load();
-                    }
-                  }
-                }
-              }
-              self2._autoResume();
-              var source = self2.ctx.createBufferSource();
-              source.buffer = self2._scratchBuffer;
-              source.connect(self2.ctx.destination);
-              if (typeof source.start === "undefined") {
-                source.noteOn(0);
-              } else {
-                source.start(0);
-              }
-              if (typeof self2.ctx.resume === "function") {
-                self2.ctx.resume();
-              }
-              source.onended = function() {
-                source.disconnect(0);
-                self2._audioUnlocked = true;
-                document.removeEventListener("touchstart", unlock, true);
-                document.removeEventListener("touchend", unlock, true);
-                document.removeEventListener("click", unlock, true);
-                document.removeEventListener("keydown", unlock, true);
-                for (var i2 = 0; i2 < self2._howls.length; i2++) {
-                  self2._howls[i2]._emit("unlock");
-                }
-              };
-            };
-            document.addEventListener("touchstart", unlock, true);
-            document.addEventListener("touchend", unlock, true);
-            document.addEventListener("click", unlock, true);
-            document.addEventListener("keydown", unlock, true);
-            return self2;
-          },
-          /**
-           * Get an unlocked HTML5 Audio object from the pool. If none are left,
-           * return a new Audio object and throw a warning.
-           * @return {Audio} HTML5 Audio object.
-           */
-          _obtainHtml5Audio: function() {
-            var self2 = this || Howler;
-            if (self2._html5AudioPool.length) {
-              return self2._html5AudioPool.pop();
-            }
-            var testPlay = new Audio().play();
-            if (testPlay && typeof Promise !== "undefined" && (testPlay instanceof Promise || typeof testPlay.then === "function")) {
-              testPlay.catch(function() {
-                console.warn("HTML5 Audio pool exhausted, returning potentially locked audio object.");
-              });
-            }
-            return new Audio();
-          },
-          /**
-           * Return an activated HTML5 Audio object to the pool.
-           * @return {Howler}
-           */
-          _releaseHtml5Audio: function(audio) {
-            var self2 = this || Howler;
-            if (audio._unlocked) {
-              self2._html5AudioPool.push(audio);
-            }
-            return self2;
-          },
-          /**
-           * Automatically suspend the Web Audio AudioContext after no sound has played for 30 seconds.
-           * This saves processing/energy and fixes various browser-specific bugs with audio getting stuck.
-           * @return {Howler}
-           */
-          _autoSuspend: function() {
-            var self2 = this;
-            if (!self2.autoSuspend || !self2.ctx || typeof self2.ctx.suspend === "undefined" || !Howler.usingWebAudio) {
-              return;
-            }
-            for (var i = 0; i < self2._howls.length; i++) {
-              if (self2._howls[i]._webAudio) {
-                for (var j = 0; j < self2._howls[i]._sounds.length; j++) {
-                  if (!self2._howls[i]._sounds[j]._paused) {
-                    return self2;
-                  }
-                }
-              }
-            }
-            if (self2._suspendTimer) {
-              clearTimeout(self2._suspendTimer);
-            }
-            self2._suspendTimer = setTimeout(function() {
-              if (!self2.autoSuspend) {
-                return;
-              }
-              self2._suspendTimer = null;
-              self2.state = "suspending";
-              var handleSuspension = function() {
-                self2.state = "suspended";
-                if (self2._resumeAfterSuspend) {
-                  delete self2._resumeAfterSuspend;
-                  self2._autoResume();
-                }
-              };
-              self2.ctx.suspend().then(handleSuspension, handleSuspension);
-            }, 3e4);
-            return self2;
-          },
-          /**
-           * Automatically resume the Web Audio AudioContext when a new sound is played.
-           * @return {Howler}
-           */
-          _autoResume: function() {
-            var self2 = this;
-            if (!self2.ctx || typeof self2.ctx.resume === "undefined" || !Howler.usingWebAudio) {
-              return;
-            }
-            if (self2.state === "running" && self2.ctx.state !== "interrupted" && self2._suspendTimer) {
-              clearTimeout(self2._suspendTimer);
-              self2._suspendTimer = null;
-            } else if (self2.state === "suspended" || self2.state === "running" && self2.ctx.state === "interrupted") {
-              self2.ctx.resume().then(function() {
-                self2.state = "running";
-                for (var i = 0; i < self2._howls.length; i++) {
-                  self2._howls[i]._emit("resume");
-                }
-              });
-              if (self2._suspendTimer) {
-                clearTimeout(self2._suspendTimer);
-                self2._suspendTimer = null;
-              }
-            } else if (self2.state === "suspending") {
-              self2._resumeAfterSuspend = true;
-            }
-            return self2;
-          }
-        };
-        var Howler = new HowlerGlobal();
-        var Howl = function(o) {
-          var self2 = this;
-          if (!o.src || o.src.length === 0) {
-            console.error("An array of source files must be passed with any new Howl.");
-            return;
-          }
-          self2.init(o);
-        };
-        Howl.prototype = {
-          /**
-           * Initialize a new Howl group object.
-           * @param  {Object} o Passed in properties for this group.
-           * @return {Howl}
-           */
-          init: function(o) {
-            var self2 = this;
-            if (!Howler.ctx) {
-              setupAudioContext();
-            }
-            self2._autoplay = o.autoplay || false;
-            self2._format = typeof o.format !== "string" ? o.format : [o.format];
-            self2._html5 = o.html5 || false;
-            self2._muted = o.mute || false;
-            self2._loop = o.loop || false;
-            self2._pool = o.pool || 5;
-            self2._preload = typeof o.preload === "boolean" || o.preload === "metadata" ? o.preload : true;
-            self2._rate = o.rate || 1;
-            self2._sprite = o.sprite || {};
-            self2._src = typeof o.src !== "string" ? o.src : [o.src];
-            self2._volume = o.volume !== void 0 ? o.volume : 1;
-            self2._xhr = {
-              method: o.xhr && o.xhr.method ? o.xhr.method : "GET",
-              headers: o.xhr && o.xhr.headers ? o.xhr.headers : null,
-              withCredentials: o.xhr && o.xhr.withCredentials ? o.xhr.withCredentials : false
-            };
-            self2._duration = 0;
-            self2._state = "unloaded";
-            self2._sounds = [];
-            self2._endTimers = {};
-            self2._queue = [];
-            self2._playLock = false;
-            self2._onend = o.onend ? [{ fn: o.onend }] : [];
-            self2._onfade = o.onfade ? [{ fn: o.onfade }] : [];
-            self2._onload = o.onload ? [{ fn: o.onload }] : [];
-            self2._onloaderror = o.onloaderror ? [{ fn: o.onloaderror }] : [];
-            self2._onplayerror = o.onplayerror ? [{ fn: o.onplayerror }] : [];
-            self2._onpause = o.onpause ? [{ fn: o.onpause }] : [];
-            self2._onplay = o.onplay ? [{ fn: o.onplay }] : [];
-            self2._onstop = o.onstop ? [{ fn: o.onstop }] : [];
-            self2._onmute = o.onmute ? [{ fn: o.onmute }] : [];
-            self2._onvolume = o.onvolume ? [{ fn: o.onvolume }] : [];
-            self2._onrate = o.onrate ? [{ fn: o.onrate }] : [];
-            self2._onseek = o.onseek ? [{ fn: o.onseek }] : [];
-            self2._onunlock = o.onunlock ? [{ fn: o.onunlock }] : [];
-            self2._onresume = [];
-            self2._webAudio = Howler.usingWebAudio && !self2._html5;
-            if (typeof Howler.ctx !== "undefined" && Howler.ctx && Howler.autoUnlock) {
-              Howler._unlockAudio();
-            }
-            Howler._howls.push(self2);
-            if (self2._autoplay) {
-              self2._queue.push({
-                event: "play",
-                action: function() {
-                  self2.play();
-                }
-              });
-            }
-            if (self2._preload && self2._preload !== "none") {
-              self2.load();
-            }
-            return self2;
-          },
-          /**
-           * Load the audio file.
-           * @return {Howler}
-           */
-          load: function() {
-            var self2 = this;
-            var url = null;
-            if (Howler.noAudio) {
-              self2._emit("loaderror", null, "No audio support.");
-              return;
-            }
-            if (typeof self2._src === "string") {
-              self2._src = [self2._src];
-            }
-            for (var i = 0; i < self2._src.length; i++) {
-              var ext, str;
-              if (self2._format && self2._format[i]) {
-                ext = self2._format[i];
-              } else {
-                str = self2._src[i];
-                if (typeof str !== "string") {
-                  self2._emit("loaderror", null, "Non-string found in selected audio sources - ignoring.");
-                  continue;
-                }
-                ext = /^data:audio\/([^;,]+);/i.exec(str);
-                if (!ext) {
-                  ext = /\.([^.]+)$/.exec(str.split("?", 1)[0]);
-                }
-                if (ext) {
-                  ext = ext[1].toLowerCase();
-                }
-              }
-              if (!ext) {
-                console.warn('No file extension was found. Consider using the "format" property or specify an extension.');
-              }
-              if (ext && Howler.codecs(ext)) {
-                url = self2._src[i];
-                break;
-              }
-            }
-            if (!url) {
-              self2._emit("loaderror", null, "No codec support for selected audio sources.");
-              return;
-            }
-            self2._src = url;
-            self2._state = "loading";
-            if (window.location.protocol === "https:" && url.slice(0, 5) === "http:") {
-              self2._html5 = true;
-              self2._webAudio = false;
-            }
-            new Sound2(self2);
-            if (self2._webAudio) {
-              loadBuffer(self2);
-            }
-            return self2;
-          },
-          /**
-           * Play a sound or resume previous playback.
-           * @param  {String/Number} sprite   Sprite name for sprite playback or sound id to continue previous.
-           * @param  {Boolean} internal Internal Use: true prevents event firing.
-           * @return {Number}          Sound ID.
-           */
-          play: function(sprite, internal) {
-            var self2 = this;
-            var id = null;
-            if (typeof sprite === "number") {
-              id = sprite;
-              sprite = null;
-            } else if (typeof sprite === "string" && self2._state === "loaded" && !self2._sprite[sprite]) {
-              return null;
-            } else if (typeof sprite === "undefined") {
-              sprite = "__default";
-              if (!self2._playLock) {
-                var num = 0;
-                for (var i = 0; i < self2._sounds.length; i++) {
-                  if (self2._sounds[i]._paused && !self2._sounds[i]._ended) {
-                    num++;
-                    id = self2._sounds[i]._id;
-                  }
-                }
-                if (num === 1) {
-                  sprite = null;
-                } else {
-                  id = null;
-                }
-              }
-            }
-            var sound = id ? self2._soundById(id) : self2._inactiveSound();
-            if (!sound) {
-              return null;
-            }
-            if (id && !sprite) {
-              sprite = sound._sprite || "__default";
-            }
-            if (self2._state !== "loaded") {
-              sound._sprite = sprite;
-              sound._ended = false;
-              var soundId = sound._id;
-              self2._queue.push({
-                event: "play",
-                action: function() {
-                  self2.play(soundId);
-                }
-              });
-              return soundId;
-            }
-            if (id && !sound._paused) {
-              if (!internal) {
-                self2._loadQueue("play");
-              }
-              return sound._id;
-            }
-            if (self2._webAudio) {
-              Howler._autoResume();
-            }
-            var seek = Math.max(0, sound._seek > 0 ? sound._seek : self2._sprite[sprite][0] / 1e3);
-            var duration = Math.max(0, (self2._sprite[sprite][0] + self2._sprite[sprite][1]) / 1e3 - seek);
-            var timeout = duration * 1e3 / Math.abs(sound._rate);
-            var start = self2._sprite[sprite][0] / 1e3;
-            var stop = (self2._sprite[sprite][0] + self2._sprite[sprite][1]) / 1e3;
-            sound._sprite = sprite;
-            sound._ended = false;
-            var setParams = function() {
-              sound._paused = false;
-              sound._seek = seek;
-              sound._start = start;
-              sound._stop = stop;
-              sound._loop = !!(sound._loop || self2._sprite[sprite][2]);
-            };
-            if (seek >= stop) {
-              self2._ended(sound);
-              return;
-            }
-            var node = sound._node;
-            if (self2._webAudio) {
-              var playWebAudio = function() {
-                self2._playLock = false;
-                setParams();
-                self2._refreshBuffer(sound);
-                var vol = sound._muted || self2._muted ? 0 : sound._volume;
-                node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
-                sound._playStart = Howler.ctx.currentTime;
-                if (typeof node.bufferSource.start === "undefined") {
-                  sound._loop ? node.bufferSource.noteGrainOn(0, seek, 86400) : node.bufferSource.noteGrainOn(0, seek, duration);
-                } else {
-                  sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
-                }
-                if (timeout !== Infinity) {
-                  self2._endTimers[sound._id] = setTimeout(self2._ended.bind(self2, sound), timeout);
-                }
-                if (!internal) {
-                  setTimeout(function() {
-                    self2._emit("play", sound._id);
-                    self2._loadQueue();
-                  }, 0);
-                }
-              };
-              if (Howler.state === "running" && Howler.ctx.state !== "interrupted") {
-                playWebAudio();
-              } else {
-                self2._playLock = true;
-                self2.once("resume", playWebAudio);
-                self2._clearTimer(sound._id);
-              }
-            } else {
-              var playHtml5 = function() {
-                node.currentTime = seek;
-                node.muted = sound._muted || self2._muted || Howler._muted || node.muted;
-                node.volume = sound._volume * Howler.volume();
-                node.playbackRate = sound._rate;
-                try {
-                  var play = node.play();
-                  if (play && typeof Promise !== "undefined" && (play instanceof Promise || typeof play.then === "function")) {
-                    self2._playLock = true;
-                    setParams();
-                    play.then(function() {
-                      self2._playLock = false;
-                      node._unlocked = true;
-                      if (!internal) {
-                        self2._emit("play", sound._id);
-                      } else {
-                        self2._loadQueue();
-                      }
-                    }).catch(function() {
-                      self2._playLock = false;
-                      self2._emit("playerror", sound._id, "Playback was unable to start. This is most commonly an issue on mobile devices and Chrome where playback was not within a user interaction.");
-                      sound._ended = true;
-                      sound._paused = true;
-                    });
-                  } else if (!internal) {
-                    self2._playLock = false;
-                    setParams();
-                    self2._emit("play", sound._id);
-                  }
-                  node.playbackRate = sound._rate;
-                  if (node.paused) {
-                    self2._emit("playerror", sound._id, "Playback was unable to start. This is most commonly an issue on mobile devices and Chrome where playback was not within a user interaction.");
-                    return;
-                  }
-                  if (sprite !== "__default" || sound._loop) {
-                    self2._endTimers[sound._id] = setTimeout(self2._ended.bind(self2, sound), timeout);
-                  } else {
-                    self2._endTimers[sound._id] = function() {
-                      self2._ended(sound);
-                      node.removeEventListener("ended", self2._endTimers[sound._id], false);
-                    };
-                    node.addEventListener("ended", self2._endTimers[sound._id], false);
-                  }
-                } catch (err) {
-                  self2._emit("playerror", sound._id, err);
-                }
-              };
-              if (node.src === "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA") {
-                node.src = self2._src;
-                node.load();
-              }
-              var loadedNoReadyState = window && window.ejecta || !node.readyState && Howler._navigator.isCocoonJS;
-              if (node.readyState >= 3 || loadedNoReadyState) {
-                playHtml5();
-              } else {
-                self2._playLock = true;
-                self2._state = "loading";
-                var listener = function() {
-                  self2._state = "loaded";
-                  playHtml5();
-                  node.removeEventListener(Howler._canPlayEvent, listener, false);
-                };
-                node.addEventListener(Howler._canPlayEvent, listener, false);
-                self2._clearTimer(sound._id);
-              }
-            }
-            return sound._id;
-          },
-          /**
-           * Pause playback and save current position.
-           * @param  {Number} id The sound ID (empty to pause all in group).
-           * @return {Howl}
-           */
-          pause: function(id) {
-            var self2 = this;
-            if (self2._state !== "loaded" || self2._playLock) {
-              self2._queue.push({
-                event: "pause",
-                action: function() {
-                  self2.pause(id);
-                }
-              });
-              return self2;
-            }
-            var ids = self2._getSoundIds(id);
-            for (var i = 0; i < ids.length; i++) {
-              self2._clearTimer(ids[i]);
-              var sound = self2._soundById(ids[i]);
-              if (sound && !sound._paused) {
-                sound._seek = self2.seek(ids[i]);
-                sound._rateSeek = 0;
-                sound._paused = true;
-                self2._stopFade(ids[i]);
-                if (sound._node) {
-                  if (self2._webAudio) {
-                    if (!sound._node.bufferSource) {
-                      continue;
-                    }
-                    if (typeof sound._node.bufferSource.stop === "undefined") {
-                      sound._node.bufferSource.noteOff(0);
-                    } else {
-                      sound._node.bufferSource.stop(0);
-                    }
-                    self2._cleanBuffer(sound._node);
-                  } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
-                    sound._node.pause();
-                  }
-                }
-              }
-              if (!arguments[1]) {
-                self2._emit("pause", sound ? sound._id : null);
-              }
-            }
-            return self2;
-          },
-          /**
-           * Stop playback and reset to start.
-           * @param  {Number} id The sound ID (empty to stop all in group).
-           * @param  {Boolean} internal Internal Use: true prevents event firing.
-           * @return {Howl}
-           */
-          stop: function(id, internal) {
-            var self2 = this;
-            if (self2._state !== "loaded" || self2._playLock) {
-              self2._queue.push({
-                event: "stop",
-                action: function() {
-                  self2.stop(id);
-                }
-              });
-              return self2;
-            }
-            var ids = self2._getSoundIds(id);
-            for (var i = 0; i < ids.length; i++) {
-              self2._clearTimer(ids[i]);
-              var sound = self2._soundById(ids[i]);
-              if (sound) {
-                sound._seek = sound._start || 0;
-                sound._rateSeek = 0;
-                sound._paused = true;
-                sound._ended = true;
-                self2._stopFade(ids[i]);
-                if (sound._node) {
-                  if (self2._webAudio) {
-                    if (sound._node.bufferSource) {
-                      if (typeof sound._node.bufferSource.stop === "undefined") {
-                        sound._node.bufferSource.noteOff(0);
-                      } else {
-                        sound._node.bufferSource.stop(0);
-                      }
-                      self2._cleanBuffer(sound._node);
-                    }
-                  } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
-                    sound._node.currentTime = sound._start || 0;
-                    sound._node.pause();
-                    if (sound._node.duration === Infinity) {
-                      self2._clearSound(sound._node);
-                    }
-                  }
-                }
-                if (!internal) {
-                  self2._emit("stop", sound._id);
-                }
-              }
-            }
-            return self2;
-          },
-          /**
-           * Mute/unmute a single sound or all sounds in this Howl group.
-           * @param  {Boolean} muted Set to true to mute and false to unmute.
-           * @param  {Number} id    The sound ID to update (omit to mute/unmute all).
-           * @return {Howl}
-           */
-          mute: function(muted, id) {
-            var self2 = this;
-            if (self2._state !== "loaded" || self2._playLock) {
-              self2._queue.push({
-                event: "mute",
-                action: function() {
-                  self2.mute(muted, id);
-                }
-              });
-              return self2;
-            }
-            if (typeof id === "undefined") {
-              if (typeof muted === "boolean") {
-                self2._muted = muted;
-              } else {
-                return self2._muted;
-              }
-            }
-            var ids = self2._getSoundIds(id);
-            for (var i = 0; i < ids.length; i++) {
-              var sound = self2._soundById(ids[i]);
-              if (sound) {
-                sound._muted = muted;
-                if (sound._interval) {
-                  self2._stopFade(sound._id);
-                }
-                if (self2._webAudio && sound._node) {
-                  sound._node.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
-                } else if (sound._node) {
-                  sound._node.muted = Howler._muted ? true : muted;
-                }
-                self2._emit("mute", sound._id);
-              }
-            }
-            return self2;
-          },
-          /**
-           * Get/set the volume of this sound or of the Howl group. This method can optionally take 0, 1 or 2 arguments.
-           *   volume() -> Returns the group's volume value.
-           *   volume(id) -> Returns the sound id's current volume.
-           *   volume(vol) -> Sets the volume of all sounds in this Howl group.
-           *   volume(vol, id) -> Sets the volume of passed sound id.
-           * @return {Howl/Number} Returns self or current volume.
-           */
-          volume: function() {
-            var self2 = this;
-            var args = arguments;
-            var vol, id;
-            if (args.length === 0) {
-              return self2._volume;
-            } else if (args.length === 1 || args.length === 2 && typeof args[1] === "undefined") {
-              var ids = self2._getSoundIds();
-              var index4 = ids.indexOf(args[0]);
-              if (index4 >= 0) {
-                id = parseInt(args[0], 10);
-              } else {
-                vol = parseFloat(args[0]);
-              }
-            } else if (args.length >= 2) {
-              vol = parseFloat(args[0]);
-              id = parseInt(args[1], 10);
-            }
-            var sound;
-            if (typeof vol !== "undefined" && vol >= 0 && vol <= 1) {
-              if (self2._state !== "loaded" || self2._playLock) {
-                self2._queue.push({
-                  event: "volume",
-                  action: function() {
-                    self2.volume.apply(self2, args);
-                  }
-                });
-                return self2;
-              }
-              if (typeof id === "undefined") {
-                self2._volume = vol;
-              }
-              id = self2._getSoundIds(id);
-              for (var i = 0; i < id.length; i++) {
-                sound = self2._soundById(id[i]);
-                if (sound) {
-                  sound._volume = vol;
-                  if (!args[2]) {
-                    self2._stopFade(id[i]);
-                  }
-                  if (self2._webAudio && sound._node && !sound._muted) {
-                    sound._node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
-                  } else if (sound._node && !sound._muted) {
-                    sound._node.volume = vol * Howler.volume();
-                  }
-                  self2._emit("volume", sound._id);
-                }
-              }
-            } else {
-              sound = id ? self2._soundById(id) : self2._sounds[0];
-              return sound ? sound._volume : 0;
-            }
-            return self2;
-          },
-          /**
-           * Fade a currently playing sound between two volumes (if no id is passed, all sounds will fade).
-           * @param  {Number} from The value to fade from (0.0 to 1.0).
-           * @param  {Number} to   The volume to fade to (0.0 to 1.0).
-           * @param  {Number} len  Time in milliseconds to fade.
-           * @param  {Number} id   The sound id (omit to fade all sounds).
-           * @return {Howl}
-           */
-          fade: function(from, to, len, id) {
-            var self2 = this;
-            if (self2._state !== "loaded" || self2._playLock) {
-              self2._queue.push({
-                event: "fade",
-                action: function() {
-                  self2.fade(from, to, len, id);
-                }
-              });
-              return self2;
-            }
-            from = Math.min(Math.max(0, parseFloat(from)), 1);
-            to = Math.min(Math.max(0, parseFloat(to)), 1);
-            len = parseFloat(len);
-            self2.volume(from, id);
-            var ids = self2._getSoundIds(id);
-            for (var i = 0; i < ids.length; i++) {
-              var sound = self2._soundById(ids[i]);
-              if (sound) {
-                if (!id) {
-                  self2._stopFade(ids[i]);
-                }
-                if (self2._webAudio && !sound._muted) {
-                  var currentTime = Howler.ctx.currentTime;
-                  var end = currentTime + len / 1e3;
-                  sound._volume = from;
-                  sound._node.gain.setValueAtTime(from, currentTime);
-                  sound._node.gain.linearRampToValueAtTime(to, end);
-                }
-                self2._startFadeInterval(sound, from, to, len, ids[i], typeof id === "undefined");
-              }
-            }
-            return self2;
-          },
-          /**
-           * Starts the internal interval to fade a sound.
-           * @param  {Object} sound Reference to sound to fade.
-           * @param  {Number} from The value to fade from (0.0 to 1.0).
-           * @param  {Number} to   The volume to fade to (0.0 to 1.0).
-           * @param  {Number} len  Time in milliseconds to fade.
-           * @param  {Number} id   The sound id to fade.
-           * @param  {Boolean} isGroup   If true, set the volume on the group.
-           */
-          _startFadeInterval: function(sound, from, to, len, id, isGroup) {
-            var self2 = this;
-            var vol = from;
-            var diff = to - from;
-            var steps = Math.abs(diff / 0.01);
-            var stepLen = Math.max(4, steps > 0 ? len / steps : len);
-            var lastTick = Date.now();
-            sound._fadeTo = to;
-            sound._interval = setInterval(function() {
-              var tick = (Date.now() - lastTick) / len;
-              lastTick = Date.now();
-              vol += diff * tick;
-              vol = Math.round(vol * 100) / 100;
-              if (diff < 0) {
-                vol = Math.max(to, vol);
-              } else {
-                vol = Math.min(to, vol);
-              }
-              if (self2._webAudio) {
-                sound._volume = vol;
-              } else {
-                self2.volume(vol, sound._id, true);
-              }
-              if (isGroup) {
-                self2._volume = vol;
-              }
-              if (to < from && vol <= to || to > from && vol >= to) {
-                clearInterval(sound._interval);
-                sound._interval = null;
-                sound._fadeTo = null;
-                self2.volume(to, sound._id);
-                self2._emit("fade", sound._id);
-              }
-            }, stepLen);
-          },
-          /**
-           * Internal method that stops the currently playing fade when
-           * a new fade starts, volume is changed or the sound is stopped.
-           * @param  {Number} id The sound id.
-           * @return {Howl}
-           */
-          _stopFade: function(id) {
-            var self2 = this;
-            var sound = self2._soundById(id);
-            if (sound && sound._interval) {
-              if (self2._webAudio) {
-                sound._node.gain.cancelScheduledValues(Howler.ctx.currentTime);
-              }
-              clearInterval(sound._interval);
-              sound._interval = null;
-              self2.volume(sound._fadeTo, id);
-              sound._fadeTo = null;
-              self2._emit("fade", id);
-            }
-            return self2;
-          },
-          /**
-           * Get/set the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
-           *   loop() -> Returns the group's loop value.
-           *   loop(id) -> Returns the sound id's loop value.
-           *   loop(loop) -> Sets the loop value for all sounds in this Howl group.
-           *   loop(loop, id) -> Sets the loop value of passed sound id.
-           * @return {Howl/Boolean} Returns self or current loop value.
-           */
-          loop: function() {
-            var self2 = this;
-            var args = arguments;
-            var loop, id, sound;
-            if (args.length === 0) {
-              return self2._loop;
-            } else if (args.length === 1) {
-              if (typeof args[0] === "boolean") {
-                loop = args[0];
-                self2._loop = loop;
-              } else {
-                sound = self2._soundById(parseInt(args[0], 10));
-                return sound ? sound._loop : false;
-              }
-            } else if (args.length === 2) {
-              loop = args[0];
-              id = parseInt(args[1], 10);
-            }
-            var ids = self2._getSoundIds(id);
-            for (var i = 0; i < ids.length; i++) {
-              sound = self2._soundById(ids[i]);
-              if (sound) {
-                sound._loop = loop;
-                if (self2._webAudio && sound._node && sound._node.bufferSource) {
-                  sound._node.bufferSource.loop = loop;
-                  if (loop) {
-                    sound._node.bufferSource.loopStart = sound._start || 0;
-                    sound._node.bufferSource.loopEnd = sound._stop;
-                    if (self2.playing(ids[i])) {
-                      self2.pause(ids[i], true);
-                      self2.play(ids[i], true);
-                    }
-                  }
-                }
-              }
-            }
-            return self2;
-          },
-          /**
-           * Get/set the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
-           *   rate() -> Returns the first sound node's current playback rate.
-           *   rate(id) -> Returns the sound id's current playback rate.
-           *   rate(rate) -> Sets the playback rate of all sounds in this Howl group.
-           *   rate(rate, id) -> Sets the playback rate of passed sound id.
-           * @return {Howl/Number} Returns self or the current playback rate.
-           */
-          rate: function() {
-            var self2 = this;
-            var args = arguments;
-            var rate, id;
-            if (args.length === 0) {
-              id = self2._sounds[0]._id;
-            } else if (args.length === 1) {
-              var ids = self2._getSoundIds();
-              var index4 = ids.indexOf(args[0]);
-              if (index4 >= 0) {
-                id = parseInt(args[0], 10);
-              } else {
-                rate = parseFloat(args[0]);
-              }
-            } else if (args.length === 2) {
-              rate = parseFloat(args[0]);
-              id = parseInt(args[1], 10);
-            }
-            var sound;
-            if (typeof rate === "number") {
-              if (self2._state !== "loaded" || self2._playLock) {
-                self2._queue.push({
-                  event: "rate",
-                  action: function() {
-                    self2.rate.apply(self2, args);
-                  }
-                });
-                return self2;
-              }
-              if (typeof id === "undefined") {
-                self2._rate = rate;
-              }
-              id = self2._getSoundIds(id);
-              for (var i = 0; i < id.length; i++) {
-                sound = self2._soundById(id[i]);
-                if (sound) {
-                  if (self2.playing(id[i])) {
-                    sound._rateSeek = self2.seek(id[i]);
-                    sound._playStart = self2._webAudio ? Howler.ctx.currentTime : sound._playStart;
-                  }
-                  sound._rate = rate;
-                  if (self2._webAudio && sound._node && sound._node.bufferSource) {
-                    sound._node.bufferSource.playbackRate.setValueAtTime(rate, Howler.ctx.currentTime);
-                  } else if (sound._node) {
-                    sound._node.playbackRate = rate;
-                  }
-                  var seek = self2.seek(id[i]);
-                  var duration = (self2._sprite[sound._sprite][0] + self2._sprite[sound._sprite][1]) / 1e3 - seek;
-                  var timeout = duration * 1e3 / Math.abs(sound._rate);
-                  if (self2._endTimers[id[i]] || !sound._paused) {
-                    self2._clearTimer(id[i]);
-                    self2._endTimers[id[i]] = setTimeout(self2._ended.bind(self2, sound), timeout);
-                  }
-                  self2._emit("rate", sound._id);
-                }
-              }
-            } else {
-              sound = self2._soundById(id);
-              return sound ? sound._rate : self2._rate;
-            }
-            return self2;
-          },
-          /**
-           * Get/set the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
-           *   seek() -> Returns the first sound node's current seek position.
-           *   seek(id) -> Returns the sound id's current seek position.
-           *   seek(seek) -> Sets the seek position of the first sound node.
-           *   seek(seek, id) -> Sets the seek position of passed sound id.
-           * @return {Howl/Number} Returns self or the current seek position.
-           */
-          seek: function() {
-            var self2 = this;
-            var args = arguments;
-            var seek, id;
-            if (args.length === 0) {
-              if (self2._sounds.length) {
-                id = self2._sounds[0]._id;
-              }
-            } else if (args.length === 1) {
-              var ids = self2._getSoundIds();
-              var index4 = ids.indexOf(args[0]);
-              if (index4 >= 0) {
-                id = parseInt(args[0], 10);
-              } else if (self2._sounds.length) {
-                id = self2._sounds[0]._id;
-                seek = parseFloat(args[0]);
-              }
-            } else if (args.length === 2) {
-              seek = parseFloat(args[0]);
-              id = parseInt(args[1], 10);
-            }
-            if (typeof id === "undefined") {
-              return 0;
-            }
-            if (typeof seek === "number" && (self2._state !== "loaded" || self2._playLock)) {
-              self2._queue.push({
-                event: "seek",
-                action: function() {
-                  self2.seek.apply(self2, args);
-                }
-              });
-              return self2;
-            }
-            var sound = self2._soundById(id);
-            if (sound) {
-              if (typeof seek === "number" && seek >= 0) {
-                var playing = self2.playing(id);
-                if (playing) {
-                  self2.pause(id, true);
-                }
-                sound._seek = seek;
-                sound._ended = false;
-                self2._clearTimer(id);
-                if (!self2._webAudio && sound._node && !isNaN(sound._node.duration)) {
-                  sound._node.currentTime = seek;
-                }
-                var seekAndEmit = function() {
-                  if (playing) {
-                    self2.play(id, true);
-                  }
-                  self2._emit("seek", id);
-                };
-                if (playing && !self2._webAudio) {
-                  var emitSeek = function() {
-                    if (!self2._playLock) {
-                      seekAndEmit();
-                    } else {
-                      setTimeout(emitSeek, 0);
-                    }
-                  };
-                  setTimeout(emitSeek, 0);
-                } else {
-                  seekAndEmit();
-                }
-              } else {
-                if (self2._webAudio) {
-                  var realTime = self2.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0;
-                  var rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
-                  return sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
-                } else {
-                  return sound._node.currentTime;
-                }
-              }
-            }
-            return self2;
-          },
-          /**
-           * Check if a specific sound is currently playing or not (if id is provided), or check if at least one of the sounds in the group is playing or not.
-           * @param  {Number}  id The sound id to check. If none is passed, the whole sound group is checked.
-           * @return {Boolean} True if playing and false if not.
-           */
-          playing: function(id) {
-            var self2 = this;
-            if (typeof id === "number") {
-              var sound = self2._soundById(id);
-              return sound ? !sound._paused : false;
-            }
-            for (var i = 0; i < self2._sounds.length; i++) {
-              if (!self2._sounds[i]._paused) {
-                return true;
-              }
-            }
-            return false;
-          },
-          /**
-           * Get the duration of this sound. Passing a sound id will return the sprite duration.
-           * @param  {Number} id The sound id to check. If none is passed, return full source duration.
-           * @return {Number} Audio duration in seconds.
-           */
-          duration: function(id) {
-            var self2 = this;
-            var duration = self2._duration;
-            var sound = self2._soundById(id);
-            if (sound) {
-              duration = self2._sprite[sound._sprite][1] / 1e3;
-            }
-            return duration;
-          },
-          /**
-           * Returns the current loaded state of this Howl.
-           * @return {String} 'unloaded', 'loading', 'loaded'
-           */
-          state: function() {
-            return this._state;
-          },
-          /**
-           * Unload and destroy the current Howl object.
-           * This will immediately stop all sound instances attached to this group.
-           */
-          unload: function() {
-            var self2 = this;
-            var sounds = self2._sounds;
-            for (var i = 0; i < sounds.length; i++) {
-              if (!sounds[i]._paused) {
-                self2.stop(sounds[i]._id);
-              }
-              if (!self2._webAudio) {
-                self2._clearSound(sounds[i]._node);
-                sounds[i]._node.removeEventListener("error", sounds[i]._errorFn, false);
-                sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
-                sounds[i]._node.removeEventListener("ended", sounds[i]._endFn, false);
-                Howler._releaseHtml5Audio(sounds[i]._node);
-              }
-              delete sounds[i]._node;
-              self2._clearTimer(sounds[i]._id);
-            }
-            var index4 = Howler._howls.indexOf(self2);
-            if (index4 >= 0) {
-              Howler._howls.splice(index4, 1);
-            }
-            var remCache = true;
-            for (i = 0; i < Howler._howls.length; i++) {
-              if (Howler._howls[i]._src === self2._src || self2._src.indexOf(Howler._howls[i]._src) >= 0) {
-                remCache = false;
-                break;
-              }
-            }
-            if (cache && remCache) {
-              delete cache[self2._src];
-            }
-            Howler.noAudio = false;
-            self2._state = "unloaded";
-            self2._sounds = [];
-            self2 = null;
-            return null;
-          },
-          /**
-           * Listen to a custom event.
-           * @param  {String}   event Event name.
-           * @param  {Function} fn    Listener to call.
-           * @param  {Number}   id    (optional) Only listen to events for this sound.
-           * @param  {Number}   once  (INTERNAL) Marks event to fire only once.
-           * @return {Howl}
-           */
-          on: function(event, fn, id, once2) {
-            var self2 = this;
-            var events = self2["_on" + event];
-            if (typeof fn === "function") {
-              events.push(once2 ? { id, fn, once: once2 } : { id, fn });
-            }
-            return self2;
-          },
-          /**
-           * Remove a custom event. Call without parameters to remove all events.
-           * @param  {String}   event Event name.
-           * @param  {Function} fn    Listener to remove. Leave empty to remove all.
-           * @param  {Number}   id    (optional) Only remove events for this sound.
-           * @return {Howl}
-           */
-          off: function(event, fn, id) {
-            var self2 = this;
-            var events = self2["_on" + event];
-            var i = 0;
-            if (typeof fn === "number") {
-              id = fn;
-              fn = null;
-            }
-            if (fn || id) {
-              for (i = 0; i < events.length; i++) {
-                var isId = id === events[i].id;
-                if (fn === events[i].fn && isId || !fn && isId) {
-                  events.splice(i, 1);
-                  break;
-                }
-              }
-            } else if (event) {
-              self2["_on" + event] = [];
-            } else {
-              var keys = Object.keys(self2);
-              for (i = 0; i < keys.length; i++) {
-                if (keys[i].indexOf("_on") === 0 && Array.isArray(self2[keys[i]])) {
-                  self2[keys[i]] = [];
-                }
-              }
-            }
-            return self2;
-          },
-          /**
-           * Listen to a custom event and remove it once fired.
-           * @param  {String}   event Event name.
-           * @param  {Function} fn    Listener to call.
-           * @param  {Number}   id    (optional) Only listen to events for this sound.
-           * @return {Howl}
-           */
-          once: function(event, fn, id) {
-            var self2 = this;
-            self2.on(event, fn, id, 1);
-            return self2;
-          },
-          /**
-           * Emit all events of a specific type and pass the sound id.
-           * @param  {String} event Event name.
-           * @param  {Number} id    Sound ID.
-           * @param  {Number} msg   Message to go with event.
-           * @return {Howl}
-           */
-          _emit: function(event, id, msg) {
-            var self2 = this;
-            var events = self2["_on" + event];
-            for (var i = events.length - 1; i >= 0; i--) {
-              if (!events[i].id || events[i].id === id || event === "load") {
-                setTimeout(function(fn) {
-                  fn.call(this, id, msg);
-                }.bind(self2, events[i].fn), 0);
-                if (events[i].once) {
-                  self2.off(event, events[i].fn, events[i].id);
-                }
-              }
-            }
-            self2._loadQueue(event);
-            return self2;
-          },
-          /**
-           * Queue of actions initiated before the sound has loaded.
-           * These will be called in sequence, with the next only firing
-           * after the previous has finished executing (even if async like play).
-           * @return {Howl}
-           */
-          _loadQueue: function(event) {
-            var self2 = this;
-            if (self2._queue.length > 0) {
-              var task = self2._queue[0];
-              if (task.event === event) {
-                self2._queue.shift();
-                self2._loadQueue();
-              }
-              if (!event) {
-                task.action();
-              }
-            }
-            return self2;
-          },
-          /**
-           * Fired when playback ends at the end of the duration.
-           * @param  {Sound} sound The sound object to work with.
-           * @return {Howl}
-           */
-          _ended: function(sound) {
-            var self2 = this;
-            var sprite = sound._sprite;
-            if (!self2._webAudio && sound._node && !sound._node.paused && !sound._node.ended && sound._node.currentTime < sound._stop) {
-              setTimeout(self2._ended.bind(self2, sound), 100);
-              return self2;
-            }
-            var loop = !!(sound._loop || self2._sprite[sprite][2]);
-            self2._emit("end", sound._id);
-            if (!self2._webAudio && loop) {
-              self2.stop(sound._id, true).play(sound._id);
-            }
-            if (self2._webAudio && loop) {
-              self2._emit("play", sound._id);
-              sound._seek = sound._start || 0;
-              sound._rateSeek = 0;
-              sound._playStart = Howler.ctx.currentTime;
-              var timeout = (sound._stop - sound._start) * 1e3 / Math.abs(sound._rate);
-              self2._endTimers[sound._id] = setTimeout(self2._ended.bind(self2, sound), timeout);
-            }
-            if (self2._webAudio && !loop) {
-              sound._paused = true;
-              sound._ended = true;
-              sound._seek = sound._start || 0;
-              sound._rateSeek = 0;
-              self2._clearTimer(sound._id);
-              self2._cleanBuffer(sound._node);
-              Howler._autoSuspend();
-            }
-            if (!self2._webAudio && !loop) {
-              self2.stop(sound._id, true);
-            }
-            return self2;
-          },
-          /**
-           * Clear the end timer for a sound playback.
-           * @param  {Number} id The sound ID.
-           * @return {Howl}
-           */
-          _clearTimer: function(id) {
-            var self2 = this;
-            if (self2._endTimers[id]) {
-              if (typeof self2._endTimers[id] !== "function") {
-                clearTimeout(self2._endTimers[id]);
-              } else {
-                var sound = self2._soundById(id);
-                if (sound && sound._node) {
-                  sound._node.removeEventListener("ended", self2._endTimers[id], false);
-                }
-              }
-              delete self2._endTimers[id];
-            }
-            return self2;
-          },
-          /**
-           * Return the sound identified by this ID, or return null.
-           * @param  {Number} id Sound ID
-           * @return {Object}    Sound object or null.
-           */
-          _soundById: function(id) {
-            var self2 = this;
-            for (var i = 0; i < self2._sounds.length; i++) {
-              if (id === self2._sounds[i]._id) {
-                return self2._sounds[i];
-              }
-            }
-            return null;
-          },
-          /**
-           * Return an inactive sound from the pool or create a new one.
-           * @return {Sound} Sound playback object.
-           */
-          _inactiveSound: function() {
-            var self2 = this;
-            self2._drain();
-            for (var i = 0; i < self2._sounds.length; i++) {
-              if (self2._sounds[i]._ended) {
-                return self2._sounds[i].reset();
-              }
-            }
-            return new Sound2(self2);
-          },
-          /**
-           * Drain excess inactive sounds from the pool.
-           */
-          _drain: function() {
-            var self2 = this;
-            var limit = self2._pool;
-            var cnt = 0;
-            var i = 0;
-            if (self2._sounds.length < limit) {
-              return;
-            }
-            for (i = 0; i < self2._sounds.length; i++) {
-              if (self2._sounds[i]._ended) {
-                cnt++;
-              }
-            }
-            for (i = self2._sounds.length - 1; i >= 0; i--) {
-              if (cnt <= limit) {
-                return;
-              }
-              if (self2._sounds[i]._ended) {
-                if (self2._webAudio && self2._sounds[i]._node) {
-                  self2._sounds[i]._node.disconnect(0);
-                }
-                self2._sounds.splice(i, 1);
-                cnt--;
-              }
-            }
-          },
-          /**
-           * Get all ID's from the sounds pool.
-           * @param  {Number} id Only return one ID if one is passed.
-           * @return {Array}    Array of IDs.
-           */
-          _getSoundIds: function(id) {
-            var self2 = this;
-            if (typeof id === "undefined") {
-              var ids = [];
-              for (var i = 0; i < self2._sounds.length; i++) {
-                ids.push(self2._sounds[i]._id);
-              }
-              return ids;
-            } else {
-              return [id];
-            }
-          },
-          /**
-           * Load the sound back into the buffer source.
-           * @param  {Sound} sound The sound object to work with.
-           * @return {Howl}
-           */
-          _refreshBuffer: function(sound) {
-            var self2 = this;
-            sound._node.bufferSource = Howler.ctx.createBufferSource();
-            sound._node.bufferSource.buffer = cache[self2._src];
-            if (sound._panner) {
-              sound._node.bufferSource.connect(sound._panner);
-            } else {
-              sound._node.bufferSource.connect(sound._node);
-            }
-            sound._node.bufferSource.loop = sound._loop;
-            if (sound._loop) {
-              sound._node.bufferSource.loopStart = sound._start || 0;
-              sound._node.bufferSource.loopEnd = sound._stop || 0;
-            }
-            sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
-            return self2;
-          },
-          /**
-           * Prevent memory leaks by cleaning up the buffer source after playback.
-           * @param  {Object} node Sound's audio node containing the buffer source.
-           * @return {Howl}
-           */
-          _cleanBuffer: function(node) {
-            var self2 = this;
-            var isIOS = Howler._navigator && Howler._navigator.vendor.indexOf("Apple") >= 0;
-            if (Howler._scratchBuffer && node.bufferSource) {
-              node.bufferSource.onended = null;
-              node.bufferSource.disconnect(0);
-              if (isIOS) {
-                try {
-                  node.bufferSource.buffer = Howler._scratchBuffer;
-                } catch (e) {
-                }
-              }
-            }
-            node.bufferSource = null;
-            return self2;
-          },
-          /**
-           * Set the source to a 0-second silence to stop any downloading (except in IE).
-           * @param  {Object} node Audio node to clear.
-           */
-          _clearSound: function(node) {
-            var checkIE = /MSIE |Trident\//.test(Howler._navigator && Howler._navigator.userAgent);
-            if (!checkIE) {
-              node.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-            }
-          }
-        };
-        var Sound2 = function(howl) {
-          this._parent = howl;
-          this.init();
-        };
-        Sound2.prototype = {
-          /**
-           * Initialize a new Sound object.
-           * @return {Sound}
-           */
-          init: function() {
-            var self2 = this;
-            var parent = self2._parent;
-            self2._muted = parent._muted;
-            self2._loop = parent._loop;
-            self2._volume = parent._volume;
-            self2._rate = parent._rate;
-            self2._seek = 0;
-            self2._paused = true;
-            self2._ended = true;
-            self2._sprite = "__default";
-            self2._id = ++Howler._counter;
-            parent._sounds.push(self2);
-            self2.create();
-            return self2;
-          },
-          /**
-           * Create and setup a new sound object, whether HTML5 Audio or Web Audio.
-           * @return {Sound}
-           */
-          create: function() {
-            var self2 = this;
-            var parent = self2._parent;
-            var volume = Howler._muted || self2._muted || self2._parent._muted ? 0 : self2._volume;
-            if (parent._webAudio) {
-              self2._node = typeof Howler.ctx.createGain === "undefined" ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-              self2._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
-              self2._node.paused = true;
-              self2._node.connect(Howler.masterGain);
-            } else if (!Howler.noAudio) {
-              self2._node = Howler._obtainHtml5Audio();
-              self2._errorFn = self2._errorListener.bind(self2);
-              self2._node.addEventListener("error", self2._errorFn, false);
-              self2._loadFn = self2._loadListener.bind(self2);
-              self2._node.addEventListener(Howler._canPlayEvent, self2._loadFn, false);
-              self2._endFn = self2._endListener.bind(self2);
-              self2._node.addEventListener("ended", self2._endFn, false);
-              self2._node.src = parent._src;
-              self2._node.preload = parent._preload === true ? "auto" : parent._preload;
-              self2._node.volume = volume * Howler.volume();
-              self2._node.load();
-            }
-            return self2;
-          },
-          /**
-           * Reset the parameters of this sound to the original state (for recycle).
-           * @return {Sound}
-           */
-          reset: function() {
-            var self2 = this;
-            var parent = self2._parent;
-            self2._muted = parent._muted;
-            self2._loop = parent._loop;
-            self2._volume = parent._volume;
-            self2._rate = parent._rate;
-            self2._seek = 0;
-            self2._rateSeek = 0;
-            self2._paused = true;
-            self2._ended = true;
-            self2._sprite = "__default";
-            self2._id = ++Howler._counter;
-            return self2;
-          },
-          /**
-           * HTML5 Audio error listener callback.
-           */
-          _errorListener: function() {
-            var self2 = this;
-            self2._parent._emit("loaderror", self2._id, self2._node.error ? self2._node.error.code : 0);
-            self2._node.removeEventListener("error", self2._errorFn, false);
-          },
-          /**
-           * HTML5 Audio canplaythrough listener callback.
-           */
-          _loadListener: function() {
-            var self2 = this;
-            var parent = self2._parent;
-            parent._duration = Math.ceil(self2._node.duration * 10) / 10;
-            if (Object.keys(parent._sprite).length === 0) {
-              parent._sprite = { __default: [0, parent._duration * 1e3] };
-            }
-            if (parent._state !== "loaded") {
-              parent._state = "loaded";
-              parent._emit("load");
-              parent._loadQueue();
-            }
-            self2._node.removeEventListener(Howler._canPlayEvent, self2._loadFn, false);
-          },
-          /**
-           * HTML5 Audio ended listener callback.
-           */
-          _endListener: function() {
-            var self2 = this;
-            var parent = self2._parent;
-            if (parent._duration === Infinity) {
-              parent._duration = Math.ceil(self2._node.duration * 10) / 10;
-              if (parent._sprite.__default[1] === Infinity) {
-                parent._sprite.__default[1] = parent._duration * 1e3;
-              }
-              parent._ended(self2);
-            }
-            self2._node.removeEventListener("ended", self2._endFn, false);
-          }
-        };
-        var cache = {};
-        var loadBuffer = function(self2) {
-          var url = self2._src;
-          if (cache[url]) {
-            self2._duration = cache[url].duration;
-            loadSound(self2);
-            return;
-          }
-          if (/^data:[^;]+;base64,/.test(url)) {
-            var data = atob(url.split(",")[1]);
-            var dataView = new Uint8Array(data.length);
-            for (var i = 0; i < data.length; ++i) {
-              dataView[i] = data.charCodeAt(i);
-            }
-            decodeAudioData(dataView.buffer, self2);
-          } else {
-            var xhr = new XMLHttpRequest();
-            xhr.open(self2._xhr.method, url, true);
-            xhr.withCredentials = self2._xhr.withCredentials;
-            xhr.responseType = "arraybuffer";
-            if (self2._xhr.headers) {
-              Object.keys(self2._xhr.headers).forEach(function(key2) {
-                xhr.setRequestHeader(key2, self2._xhr.headers[key2]);
-              });
-            }
-            xhr.onload = function() {
-              var code = (xhr.status + "")[0];
-              if (code !== "0" && code !== "2" && code !== "3") {
-                self2._emit("loaderror", null, "Failed loading audio file with status: " + xhr.status + ".");
-                return;
-              }
-              decodeAudioData(xhr.response, self2);
-            };
-            xhr.onerror = function() {
-              if (self2._webAudio) {
-                self2._html5 = true;
-                self2._webAudio = false;
-                self2._sounds = [];
-                delete cache[url];
-                self2.load();
-              }
-            };
-            safeXhrSend(xhr);
-          }
-        };
-        var safeXhrSend = function(xhr) {
-          try {
-            xhr.send();
-          } catch (e) {
-            xhr.onerror();
-          }
-        };
-        var decodeAudioData = function(arraybuffer, self2) {
-          var error2 = function() {
-            self2._emit("loaderror", null, "Decoding audio data failed.");
-          };
-          var success = function(buffer) {
-            if (buffer && self2._sounds.length > 0) {
-              cache[self2._src] = buffer;
-              loadSound(self2, buffer);
-            } else {
-              error2();
-            }
-          };
-          if (typeof Promise !== "undefined" && Howler.ctx.decodeAudioData.length === 1) {
-            Howler.ctx.decodeAudioData(arraybuffer).then(success).catch(error2);
-          } else {
-            Howler.ctx.decodeAudioData(arraybuffer, success, error2);
-          }
-        };
-        var loadSound = function(self2, buffer) {
-          if (buffer && !self2._duration) {
-            self2._duration = buffer.duration;
-          }
-          if (Object.keys(self2._sprite).length === 0) {
-            self2._sprite = { __default: [0, self2._duration * 1e3] };
-          }
-          if (self2._state !== "loaded") {
-            self2._state = "loaded";
-            self2._emit("load");
-            self2._loadQueue();
-          }
-        };
-        var setupAudioContext = function() {
-          if (!Howler.usingWebAudio) {
-            return;
-          }
-          try {
-            if (typeof AudioContext !== "undefined") {
-              Howler.ctx = new AudioContext();
-            } else if (typeof webkitAudioContext !== "undefined") {
-              Howler.ctx = new webkitAudioContext();
-            } else {
-              Howler.usingWebAudio = false;
-            }
-          } catch (e) {
-            Howler.usingWebAudio = false;
-          }
-          if (!Howler.ctx) {
-            Howler.usingWebAudio = false;
-          }
-          var iOS = /iP(hone|od|ad)/.test(Howler._navigator && Howler._navigator.platform);
-          var appVersion = Howler._navigator && Howler._navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
-          var version = appVersion ? parseInt(appVersion[1], 10) : null;
-          if (iOS && version && version < 9) {
-            var safari = /safari/.test(Howler._navigator && Howler._navigator.userAgent.toLowerCase());
-            if (Howler._navigator && !safari) {
-              Howler.usingWebAudio = false;
-            }
-          }
-          if (Howler.usingWebAudio) {
-            Howler.masterGain = typeof Howler.ctx.createGain === "undefined" ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-            Howler.masterGain.gain.setValueAtTime(Howler._muted ? 0 : Howler._volume, Howler.ctx.currentTime);
-            Howler.masterGain.connect(Howler.ctx.destination);
-          }
-          Howler._setup();
-        };
-        {
-          exports.Howler = Howler;
-          exports.Howl = Howl;
-        }
-        if (typeof commonjsGlobal !== "undefined") {
-          commonjsGlobal.HowlerGlobal = HowlerGlobal;
-          commonjsGlobal.Howler = Howler;
-          commonjsGlobal.Howl = Howl;
-          commonjsGlobal.Sound = Sound2;
-        } else if (typeof window !== "undefined") {
-          window.HowlerGlobal = HowlerGlobal;
-          window.Howler = Howler;
-          window.Howl = Howl;
-          window.Sound = Sound2;
-        }
-      })();
-    })(howler_core$1);
-    howler_core = /* @__PURE__ */ _mergeNamespaces({
-      __proto__: null
-    }, [howler_core$1]);
-  }
-});
-
 // node_modules/svelte-sound/dist/svelte-sound.js
-var __defProp2, __defNormalProp2, __publicField2, Sound;
 var init_svelte_sound = __esm({
   "node_modules/svelte-sound/dist/svelte-sound.js"() {
-    __defProp2 = Object.defineProperty;
-    __defNormalProp2 = (obj, key2, value) => key2 in obj ? __defProp2(obj, key2, { enumerable: true, configurable: true, writable: true, value }) : obj[key2] = value;
-    __publicField2 = (obj, key2, value) => {
-      __defNormalProp2(obj, typeof key2 !== "symbol" ? key2 + "" : key2, value);
-      return value;
-    };
-    Sound = class {
-      /**
-       * Creates a new SyntheticSound instance.
-       * @param options The options for the sound.
-       */
-      constructor(src, options2 = {}) {
-        __publicField2(this, "src");
-        __publicField2(this, "options");
-        __publicField2(this, "howl");
-        this.src = src;
-        this.options = options2;
-        this.create();
-      }
-      /**
-       * Creates the Howl instance for the sound.
-       */
-      async create() {
-        const { Howl } = await Promise.resolve().then(() => (init_howler_core_e669a980(), howler_core_e669a980_exports)).then((n) => n.h);
-        const { loop, volume } = this.options;
-        const sound2 = new Howl({
-          src: this.src,
-          loop: loop || false,
-          volume: volume || 1,
-          ...this.options
-        });
-        this.howl = sound2;
-      }
-      /**
-       * Updates the options for the sound.
-       * @param options The new options for the sound.
-       */
-      update(options2 = this.options) {
-        this.unload();
-        this.options = options2;
-        this.create();
-      }
-      /**
-       * Destroys the sound instance.
-       */
-      destroy() {
-        this.stop();
-        this.unload();
-      }
-      /**
-       * Plays the sound.
-       */
-      play() {
-        this.howl.play();
-      }
-      /**
-       * Stops the sound.
-       */
-      stop() {
-        this.howl.stop();
-      }
-      /**
-       * Unloads the sound.
-       */
-      unload() {
-        this.howl.unload();
-      }
-    };
   }
 });
 
@@ -2511,32 +773,1739 @@ var page_svelte_exports = {};
 __export(page_svelte_exports, {
   default: () => Page
 });
-var ballonpop, Ballons_animated, css$1, Lightbulb, css, Page;
+function mergeIconTransformations(obj1, obj2) {
+  const result = {};
+  if (!obj1.hFlip !== !obj2.hFlip) {
+    result.hFlip = true;
+  }
+  if (!obj1.vFlip !== !obj2.vFlip) {
+    result.vFlip = true;
+  }
+  const rotate = ((obj1.rotate || 0) + (obj2.rotate || 0)) % 4;
+  if (rotate) {
+    result.rotate = rotate;
+  }
+  return result;
+}
+function mergeIconData(parent, child) {
+  const result = mergeIconTransformations(parent, child);
+  for (const key2 in defaultExtendedIconProps) {
+    if (key2 in defaultIconTransformations) {
+      if (key2 in parent && !(key2 in result)) {
+        result[key2] = defaultIconTransformations[key2];
+      }
+    } else if (key2 in child) {
+      result[key2] = child[key2];
+    } else if (key2 in parent) {
+      result[key2] = parent[key2];
+    }
+  }
+  return result;
+}
+function getIconsTree(data, names) {
+  const icons = data.icons;
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  const resolved = /* @__PURE__ */ Object.create(null);
+  function resolve(name) {
+    if (icons[name]) {
+      return resolved[name] = [];
+    }
+    if (!(name in resolved)) {
+      resolved[name] = null;
+      const parent = aliases[name] && aliases[name].parent;
+      const value = parent && resolve(parent);
+      if (value) {
+        resolved[name] = [parent].concat(value);
+      }
+    }
+    return resolved[name];
+  }
+  (names || Object.keys(icons).concat(Object.keys(aliases))).forEach(resolve);
+  return resolved;
+}
+function internalGetIconData(data, name, tree) {
+  const icons = data.icons;
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  let currentProps = {};
+  function parse3(name2) {
+    currentProps = mergeIconData(
+      icons[name2] || aliases[name2],
+      currentProps
+    );
+  }
+  parse3(name);
+  tree.forEach(parse3);
+  return mergeIconData(data, currentProps);
+}
+function parseIconSet(data, callback) {
+  const names = [];
+  if (typeof data !== "object" || typeof data.icons !== "object") {
+    return names;
+  }
+  if (data.not_found instanceof Array) {
+    data.not_found.forEach((name) => {
+      callback(name, null);
+      names.push(name);
+    });
+  }
+  const tree = getIconsTree(data);
+  for (const name in tree) {
+    const item = tree[name];
+    if (item) {
+      callback(name, internalGetIconData(data, name, item));
+      names.push(name);
+    }
+  }
+  return names;
+}
+function checkOptionalProps(item, defaults) {
+  for (const prop in defaults) {
+    if (prop in item && typeof item[prop] !== typeof defaults[prop]) {
+      return false;
+    }
+  }
+  return true;
+}
+function quicklyValidateIconSet(obj) {
+  if (typeof obj !== "object" || obj === null) {
+    return null;
+  }
+  const data = obj;
+  if (typeof data.prefix !== "string" || !obj.icons || typeof obj.icons !== "object") {
+    return null;
+  }
+  if (!checkOptionalProps(obj, optionalPropertyDefaults)) {
+    return null;
+  }
+  const icons = data.icons;
+  for (const name in icons) {
+    const icon = icons[name];
+    if (!name.match(matchIconName) || typeof icon.body !== "string" || !checkOptionalProps(
+      icon,
+      defaultExtendedIconProps
+    )) {
+      return null;
+    }
+  }
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  for (const name in aliases) {
+    const icon = aliases[name];
+    const parent = icon.parent;
+    if (!name.match(matchIconName) || typeof parent !== "string" || !icons[parent] && !aliases[parent] || !checkOptionalProps(
+      icon,
+      defaultExtendedIconProps
+    )) {
+      return null;
+    }
+  }
+  return data;
+}
+function newStorage(provider, prefix) {
+  return {
+    provider,
+    prefix,
+    icons: /* @__PURE__ */ Object.create(null),
+    missing: /* @__PURE__ */ new Set()
+  };
+}
+function getStorage(provider, prefix) {
+  const providerStorage = dataStorage[provider] || (dataStorage[provider] = /* @__PURE__ */ Object.create(null));
+  return providerStorage[prefix] || (providerStorage[prefix] = newStorage(provider, prefix));
+}
+function addIconSet(storage2, data) {
+  if (!quicklyValidateIconSet(data)) {
+    return [];
+  }
+  return parseIconSet(data, (name, icon) => {
+    if (icon) {
+      storage2.icons[name] = icon;
+    } else {
+      storage2.missing.add(name);
+    }
+  });
+}
+function addIconToStorage(storage2, name, icon) {
+  try {
+    if (typeof icon.body === "string") {
+      storage2.icons[name] = { ...icon };
+      return true;
+    }
+  } catch (err) {
+  }
+  return false;
+}
+function allowSimpleNames(allow) {
+  if (typeof allow === "boolean") {
+    simpleNames = allow;
+  }
+  return simpleNames;
+}
+function getIconData(name) {
+  const icon = typeof name === "string" ? stringToIcon(name, true, simpleNames) : name;
+  if (icon) {
+    const storage2 = getStorage(icon.provider, icon.prefix);
+    const iconName = icon.name;
+    return storage2.icons[iconName] || (storage2.missing.has(iconName) ? null : void 0);
+  }
+}
+function addIcon(name, data) {
+  const icon = stringToIcon(name, true, simpleNames);
+  if (!icon) {
+    return false;
+  }
+  const storage2 = getStorage(icon.provider, icon.prefix);
+  return addIconToStorage(storage2, icon.name, data);
+}
+function addCollection(data, provider) {
+  if (typeof data !== "object") {
+    return false;
+  }
+  if (typeof provider !== "string") {
+    provider = data.provider || "";
+  }
+  if (simpleNames && !provider && !data.prefix) {
+    let added = false;
+    if (quicklyValidateIconSet(data)) {
+      data.prefix = "";
+      parseIconSet(data, (name, icon) => {
+        if (icon && addIcon(name, icon)) {
+          added = true;
+        }
+      });
+    }
+    return added;
+  }
+  const prefix = data.prefix;
+  if (!validateIconName({
+    provider,
+    prefix,
+    name: "a"
+  })) {
+    return false;
+  }
+  const storage2 = getStorage(provider, prefix);
+  return !!addIconSet(storage2, data);
+}
+function calculateSize(size, ratio, precision) {
+  if (ratio === 1) {
+    return size;
+  }
+  precision = precision || 100;
+  if (typeof size === "number") {
+    return Math.ceil(size * ratio * precision) / precision;
+  }
+  if (typeof size !== "string") {
+    return size;
+  }
+  const oldParts = size.split(unitsSplit);
+  if (oldParts === null || !oldParts.length) {
+    return size;
+  }
+  const newParts = [];
+  let code = oldParts.shift();
+  let isNumber = unitsTest.test(code);
+  while (true) {
+    if (isNumber) {
+      const num = parseFloat(code);
+      if (isNaN(num)) {
+        newParts.push(code);
+      } else {
+        newParts.push(Math.ceil(num * ratio * precision) / precision);
+      }
+    } else {
+      newParts.push(code);
+    }
+    code = oldParts.shift();
+    if (code === void 0) {
+      return newParts.join("");
+    }
+    isNumber = !isNumber;
+  }
+}
+function iconToSVG(icon, customisations) {
+  const fullIcon = {
+    ...defaultIconProps,
+    ...icon
+  };
+  const fullCustomisations = {
+    ...defaultIconCustomisations,
+    ...customisations
+  };
+  const box = {
+    left: fullIcon.left,
+    top: fullIcon.top,
+    width: fullIcon.width,
+    height: fullIcon.height
+  };
+  let body = fullIcon.body;
+  [fullIcon, fullCustomisations].forEach((props) => {
+    const transformations = [];
+    const hFlip = props.hFlip;
+    const vFlip = props.vFlip;
+    let rotation = props.rotate;
+    if (hFlip) {
+      if (vFlip) {
+        rotation += 2;
+      } else {
+        transformations.push(
+          "translate(" + (box.width + box.left).toString() + " " + (0 - box.top).toString() + ")"
+        );
+        transformations.push("scale(-1 1)");
+        box.top = box.left = 0;
+      }
+    } else if (vFlip) {
+      transformations.push(
+        "translate(" + (0 - box.left).toString() + " " + (box.height + box.top).toString() + ")"
+      );
+      transformations.push("scale(1 -1)");
+      box.top = box.left = 0;
+    }
+    let tempValue;
+    if (rotation < 0) {
+      rotation -= Math.floor(rotation / 4) * 4;
+    }
+    rotation = rotation % 4;
+    switch (rotation) {
+      case 1:
+        tempValue = box.height / 2 + box.top;
+        transformations.unshift(
+          "rotate(90 " + tempValue.toString() + " " + tempValue.toString() + ")"
+        );
+        break;
+      case 2:
+        transformations.unshift(
+          "rotate(180 " + (box.width / 2 + box.left).toString() + " " + (box.height / 2 + box.top).toString() + ")"
+        );
+        break;
+      case 3:
+        tempValue = box.width / 2 + box.left;
+        transformations.unshift(
+          "rotate(-90 " + tempValue.toString() + " " + tempValue.toString() + ")"
+        );
+        break;
+    }
+    if (rotation % 2 === 1) {
+      if (box.left !== box.top) {
+        tempValue = box.left;
+        box.left = box.top;
+        box.top = tempValue;
+      }
+      if (box.width !== box.height) {
+        tempValue = box.width;
+        box.width = box.height;
+        box.height = tempValue;
+      }
+    }
+    if (transformations.length) {
+      body = '<g transform="' + transformations.join(" ") + '">' + body + "</g>";
+    }
+  });
+  const customisationsWidth = fullCustomisations.width;
+  const customisationsHeight = fullCustomisations.height;
+  const boxWidth = box.width;
+  const boxHeight = box.height;
+  let width;
+  let height;
+  if (customisationsWidth === null) {
+    height = customisationsHeight === null ? "1em" : customisationsHeight === "auto" ? boxHeight : customisationsHeight;
+    width = calculateSize(height, boxWidth / boxHeight);
+  } else {
+    width = customisationsWidth === "auto" ? boxWidth : customisationsWidth;
+    height = customisationsHeight === null ? calculateSize(width, boxHeight / boxWidth) : customisationsHeight === "auto" ? boxHeight : customisationsHeight;
+  }
+  const attributes = {};
+  const setAttr = (prop, value) => {
+    if (!isUnsetKeyword(value)) {
+      attributes[prop] = value.toString();
+    }
+  };
+  setAttr("width", width);
+  setAttr("height", height);
+  attributes.viewBox = box.left.toString() + " " + box.top.toString() + " " + boxWidth.toString() + " " + boxHeight.toString();
+  return {
+    attributes,
+    body
+  };
+}
+function replaceIDs(body, prefix = randomPrefix) {
+  const ids = [];
+  let match;
+  while (match = regex.exec(body)) {
+    ids.push(match[1]);
+  }
+  if (!ids.length) {
+    return body;
+  }
+  const suffix = "suffix" + (Math.random() * 16777216 | Date.now()).toString(16);
+  ids.forEach((id) => {
+    const newID = typeof prefix === "function" ? prefix(id) : prefix + (counter++).toString();
+    const escapedID = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    body = body.replace(
+      // Allowed characters before id: [#;"]
+      // Allowed characters after id: [)"], .[a-z]
+      new RegExp('([#;"])(' + escapedID + ')([")]|\\.[a-z])', "g"),
+      "$1" + newID + suffix + "$3"
+    );
+  });
+  body = body.replace(new RegExp(suffix, "g"), "");
+  return body;
+}
+function setAPIModule(provider, item) {
+  storage[provider] = item;
+}
+function getAPIModule(provider) {
+  return storage[provider] || storage[""];
+}
+function createAPIConfig(source) {
+  let resources;
+  if (typeof source.resources === "string") {
+    resources = [source.resources];
+  } else {
+    resources = source.resources;
+    if (!(resources instanceof Array) || !resources.length) {
+      return null;
+    }
+  }
+  const result = {
+    // API hosts
+    resources,
+    // Root path
+    path: source.path || "/",
+    // URL length limit
+    maxURL: source.maxURL || 500,
+    // Timeout before next host is used.
+    rotate: source.rotate || 750,
+    // Timeout before failing query.
+    timeout: source.timeout || 5e3,
+    // Randomise default API end point.
+    random: source.random === true,
+    // Start index
+    index: source.index || 0,
+    // Receive data after time out (used if time out kicks in first, then API module sends data anyway).
+    dataAfterTimeout: source.dataAfterTimeout !== false
+  };
+  return result;
+}
+function addAPIProvider(provider, customConfig) {
+  const config = createAPIConfig(customConfig);
+  if (config === null) {
+    return false;
+  }
+  configStorage[provider] = config;
+  return true;
+}
+function getAPIConfig(provider) {
+  return configStorage[provider];
+}
+function calculateMaxLength(provider, prefix) {
+  const config = getAPIConfig(provider);
+  if (!config) {
+    return 0;
+  }
+  let result;
+  if (!config.maxURL) {
+    result = 0;
+  } else {
+    let maxHostLength = 0;
+    config.resources.forEach((item) => {
+      const host = item;
+      maxHostLength = Math.max(maxHostLength, host.length);
+    });
+    const url = prefix + ".json?icons=";
+    result = config.maxURL - maxHostLength - config.path.length - url.length;
+  }
+  return result;
+}
+function shouldAbort(status) {
+  return status === 404;
+}
+function getPath(provider) {
+  if (typeof provider === "string") {
+    const config = getAPIConfig(provider);
+    if (config) {
+      return config.path;
+    }
+  }
+  return "/";
+}
+function sortIcons(icons) {
+  const result = {
+    loaded: [],
+    missing: [],
+    pending: []
+  };
+  const storage2 = /* @__PURE__ */ Object.create(null);
+  icons.sort((a, b) => {
+    if (a.provider !== b.provider) {
+      return a.provider.localeCompare(b.provider);
+    }
+    if (a.prefix !== b.prefix) {
+      return a.prefix.localeCompare(b.prefix);
+    }
+    return a.name.localeCompare(b.name);
+  });
+  let lastIcon = {
+    provider: "",
+    prefix: "",
+    name: ""
+  };
+  icons.forEach((icon) => {
+    if (lastIcon.name === icon.name && lastIcon.prefix === icon.prefix && lastIcon.provider === icon.provider) {
+      return;
+    }
+    lastIcon = icon;
+    const provider = icon.provider;
+    const prefix = icon.prefix;
+    const name = icon.name;
+    const providerStorage = storage2[provider] || (storage2[provider] = /* @__PURE__ */ Object.create(null));
+    const localStorage = providerStorage[prefix] || (providerStorage[prefix] = getStorage(provider, prefix));
+    let list;
+    if (name in localStorage.icons) {
+      list = result.loaded;
+    } else if (prefix === "" || localStorage.missing.has(name)) {
+      list = result.missing;
+    } else {
+      list = result.pending;
+    }
+    const item = {
+      provider,
+      prefix,
+      name
+    };
+    list.push(item);
+  });
+  return result;
+}
+function removeCallback(storages, id) {
+  storages.forEach((storage2) => {
+    const items = storage2.loaderCallbacks;
+    if (items) {
+      storage2.loaderCallbacks = items.filter((row) => row.id !== id);
+    }
+  });
+}
+function updateCallbacks(storage2) {
+  if (!storage2.pendingCallbacksFlag) {
+    storage2.pendingCallbacksFlag = true;
+    setTimeout(() => {
+      storage2.pendingCallbacksFlag = false;
+      const items = storage2.loaderCallbacks ? storage2.loaderCallbacks.slice(0) : [];
+      if (!items.length) {
+        return;
+      }
+      let hasPending = false;
+      const provider = storage2.provider;
+      const prefix = storage2.prefix;
+      items.forEach((item) => {
+        const icons = item.icons;
+        const oldLength = icons.pending.length;
+        icons.pending = icons.pending.filter((icon) => {
+          if (icon.prefix !== prefix) {
+            return true;
+          }
+          const name = icon.name;
+          if (storage2.icons[name]) {
+            icons.loaded.push({
+              provider,
+              prefix,
+              name
+            });
+          } else if (storage2.missing.has(name)) {
+            icons.missing.push({
+              provider,
+              prefix,
+              name
+            });
+          } else {
+            hasPending = true;
+            return true;
+          }
+          return false;
+        });
+        if (icons.pending.length !== oldLength) {
+          if (!hasPending) {
+            removeCallback([storage2], item.id);
+          }
+          item.callback(
+            icons.loaded.slice(0),
+            icons.missing.slice(0),
+            icons.pending.slice(0),
+            item.abort
+          );
+        }
+      });
+    });
+  }
+}
+function storeCallback(callback, icons, pendingSources) {
+  const id = idCounter++;
+  const abort = removeCallback.bind(null, pendingSources, id);
+  if (!icons.pending.length) {
+    return abort;
+  }
+  const item = {
+    id,
+    icons,
+    callback,
+    abort
+  };
+  pendingSources.forEach((storage2) => {
+    (storage2.loaderCallbacks || (storage2.loaderCallbacks = [])).push(item);
+  });
+  return abort;
+}
+function listToIcons(list, validate = true, simpleNames2 = false) {
+  const result = [];
+  list.forEach((item) => {
+    const icon = typeof item === "string" ? stringToIcon(item, validate, simpleNames2) : item;
+    if (icon) {
+      result.push(icon);
+    }
+  });
+  return result;
+}
+function sendQuery(config, payload, query, done) {
+  const resourcesCount = config.resources.length;
+  const startIndex = config.random ? Math.floor(Math.random() * resourcesCount) : config.index;
+  let resources;
+  if (config.random) {
+    let list = config.resources.slice(0);
+    resources = [];
+    while (list.length > 1) {
+      const nextIndex = Math.floor(Math.random() * list.length);
+      resources.push(list[nextIndex]);
+      list = list.slice(0, nextIndex).concat(list.slice(nextIndex + 1));
+    }
+    resources = resources.concat(list);
+  } else {
+    resources = config.resources.slice(startIndex).concat(config.resources.slice(0, startIndex));
+  }
+  const startTime = Date.now();
+  let status = "pending";
+  let queriesSent = 0;
+  let lastError;
+  let timer = null;
+  let queue = [];
+  let doneCallbacks = [];
+  if (typeof done === "function") {
+    doneCallbacks.push(done);
+  }
+  function resetTimer() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  }
+  function abort() {
+    if (status === "pending") {
+      status = "aborted";
+    }
+    resetTimer();
+    queue.forEach((item) => {
+      if (item.status === "pending") {
+        item.status = "aborted";
+      }
+    });
+    queue = [];
+  }
+  function subscribe2(callback, overwrite) {
+    if (overwrite) {
+      doneCallbacks = [];
+    }
+    if (typeof callback === "function") {
+      doneCallbacks.push(callback);
+    }
+  }
+  function getQueryStatus() {
+    return {
+      startTime,
+      payload,
+      status,
+      queriesSent,
+      queriesPending: queue.length,
+      subscribe: subscribe2,
+      abort
+    };
+  }
+  function failQuery() {
+    status = "failed";
+    doneCallbacks.forEach((callback) => {
+      callback(void 0, lastError);
+    });
+  }
+  function clearQueue() {
+    queue.forEach((item) => {
+      if (item.status === "pending") {
+        item.status = "aborted";
+      }
+    });
+    queue = [];
+  }
+  function moduleResponse(item, response, data) {
+    const isError = response !== "success";
+    queue = queue.filter((queued) => queued !== item);
+    switch (status) {
+      case "pending":
+        break;
+      case "failed":
+        if (isError || !config.dataAfterTimeout) {
+          return;
+        }
+        break;
+      default:
+        return;
+    }
+    if (response === "abort") {
+      lastError = data;
+      failQuery();
+      return;
+    }
+    if (isError) {
+      lastError = data;
+      if (!queue.length) {
+        if (!resources.length) {
+          failQuery();
+        } else {
+          execNext();
+        }
+      }
+      return;
+    }
+    resetTimer();
+    clearQueue();
+    if (!config.random) {
+      const index4 = config.resources.indexOf(item.resource);
+      if (index4 !== -1 && index4 !== config.index) {
+        config.index = index4;
+      }
+    }
+    status = "completed";
+    doneCallbacks.forEach((callback) => {
+      callback(data);
+    });
+  }
+  function execNext() {
+    if (status !== "pending") {
+      return;
+    }
+    resetTimer();
+    const resource = resources.shift();
+    if (resource === void 0) {
+      if (queue.length) {
+        timer = setTimeout(() => {
+          resetTimer();
+          if (status === "pending") {
+            clearQueue();
+            failQuery();
+          }
+        }, config.timeout);
+        return;
+      }
+      failQuery();
+      return;
+    }
+    const item = {
+      status: "pending",
+      resource,
+      callback: (status2, data) => {
+        moduleResponse(item, status2, data);
+      }
+    };
+    queue.push(item);
+    queriesSent++;
+    timer = setTimeout(execNext, config.rotate);
+    query(resource, payload, item.callback);
+  }
+  setTimeout(execNext);
+  return getQueryStatus;
+}
+function initRedundancy(cfg) {
+  const config = {
+    ...defaultConfig,
+    ...cfg
+  };
+  let queries = [];
+  function cleanup() {
+    queries = queries.filter((item) => item().status === "pending");
+  }
+  function query(payload, queryCallback, doneCallback) {
+    const query2 = sendQuery(
+      config,
+      payload,
+      queryCallback,
+      (data, error2) => {
+        cleanup();
+        if (doneCallback) {
+          doneCallback(data, error2);
+        }
+      }
+    );
+    queries.push(query2);
+    return query2;
+  }
+  function find(callback) {
+    return queries.find((value) => {
+      return callback(value);
+    }) || null;
+  }
+  const instance = {
+    query,
+    find,
+    setIndex: (index4) => {
+      config.index = index4;
+    },
+    getIndex: () => config.index,
+    cleanup
+  };
+  return instance;
+}
+function emptyCallback$1() {
+}
+function getRedundancyCache(provider) {
+  if (!redundancyCache[provider]) {
+    const config = getAPIConfig(provider);
+    if (!config) {
+      return;
+    }
+    const redundancy = initRedundancy(config);
+    const cachedReundancy = {
+      config,
+      redundancy
+    };
+    redundancyCache[provider] = cachedReundancy;
+  }
+  return redundancyCache[provider];
+}
+function sendAPIQuery(target, query, callback) {
+  let redundancy;
+  let send2;
+  if (typeof target === "string") {
+    const api = getAPIModule(target);
+    if (!api) {
+      callback(void 0, 424);
+      return emptyCallback$1;
+    }
+    send2 = api.send;
+    const cached = getRedundancyCache(target);
+    if (cached) {
+      redundancy = cached.redundancy;
+    }
+  } else {
+    const config = createAPIConfig(target);
+    if (config) {
+      redundancy = initRedundancy(config);
+      const moduleKey = target.resources ? target.resources[0] : "";
+      const api = getAPIModule(moduleKey);
+      if (api) {
+        send2 = api.send;
+      }
+    }
+  }
+  if (!redundancy || !send2) {
+    callback(void 0, 424);
+    return emptyCallback$1;
+  }
+  return redundancy.query(query, send2, callback)().abort;
+}
+function getStoredItem(func, key2) {
+  try {
+    return func.getItem(key2);
+  } catch (err) {
+  }
+}
+function setStoredItem(func, key2, value) {
+  try {
+    func.setItem(key2, value);
+    return true;
+  } catch (err) {
+  }
+}
+function removeStoredItem(func, key2) {
+  try {
+    func.removeItem(key2);
+  } catch (err) {
+  }
+}
+function setBrowserStorageItemsCount(storage2, value) {
+  return setStoredItem(storage2, browserCacheCountKey, value.toString());
+}
+function getBrowserStorageItemsCount(storage2) {
+  return parseInt(getStoredItem(storage2, browserCacheCountKey)) || 0;
+}
+function setBrowserStorageStatus(status) {
+  browserStorageStatus = status;
+}
+function getBrowserStorage(key2) {
+  const attr = key2 + "Storage";
+  try {
+    if (_window && _window[attr] && typeof _window[attr].length === "number") {
+      return _window[attr];
+    }
+  } catch (err) {
+  }
+  browserStorageConfig[key2] = false;
+}
+function iterateBrowserStorage(key2, callback) {
+  const func = getBrowserStorage(key2);
+  if (!func) {
+    return;
+  }
+  const version = getStoredItem(func, browserCacheVersionKey);
+  if (version !== browserCacheVersion) {
+    if (version) {
+      const total2 = getBrowserStorageItemsCount(func);
+      for (let i = 0; i < total2; i++) {
+        removeStoredItem(func, browserCachePrefix + i.toString());
+      }
+    }
+    setStoredItem(func, browserCacheVersionKey, browserCacheVersion);
+    setBrowserStorageItemsCount(func, 0);
+    return;
+  }
+  const minTime = Math.floor(Date.now() / browserStorageHour) - browserStorageCacheExpiration;
+  const parseItem = (index4) => {
+    const name = browserCachePrefix + index4.toString();
+    const item = getStoredItem(func, name);
+    if (typeof item !== "string") {
+      return;
+    }
+    try {
+      const data = JSON.parse(item);
+      if (typeof data === "object" && typeof data.cached === "number" && data.cached > minTime && typeof data.provider === "string" && typeof data.data === "object" && typeof data.data.prefix === "string" && // Valid item: run callback
+      callback(data, index4)) {
+        return true;
+      }
+    } catch (err) {
+    }
+    removeStoredItem(func, name);
+  };
+  let total = getBrowserStorageItemsCount(func);
+  for (let i = total - 1; i >= 0; i--) {
+    if (!parseItem(i)) {
+      if (i === total - 1) {
+        total--;
+        setBrowserStorageItemsCount(func, total);
+      } else {
+        browserStorageEmptyItems[key2].add(i);
+      }
+    }
+  }
+}
+function initBrowserStorage() {
+  if (browserStorageStatus) {
+    return;
+  }
+  setBrowserStorageStatus(true);
+  for (const key2 in browserStorageConfig) {
+    iterateBrowserStorage(key2, (item) => {
+      const iconSet = item.data;
+      const provider = item.provider;
+      const prefix = iconSet.prefix;
+      const storage2 = getStorage(
+        provider,
+        prefix
+      );
+      if (!addIconSet(storage2, iconSet).length) {
+        return false;
+      }
+      const lastModified = iconSet.lastModified || -1;
+      storage2.lastModifiedCached = storage2.lastModifiedCached ? Math.min(storage2.lastModifiedCached, lastModified) : lastModified;
+      return true;
+    });
+  }
+}
+function updateLastModified(storage2, lastModified) {
+  const lastValue = storage2.lastModifiedCached;
+  if (
+    // Matches or newer
+    lastValue && lastValue >= lastModified
+  ) {
+    return lastValue === lastModified;
+  }
+  storage2.lastModifiedCached = lastModified;
+  if (lastValue) {
+    for (const key2 in browserStorageConfig) {
+      iterateBrowserStorage(key2, (item) => {
+        const iconSet = item.data;
+        return item.provider !== storage2.provider || iconSet.prefix !== storage2.prefix || iconSet.lastModified === lastModified;
+      });
+    }
+  }
+  return true;
+}
+function storeInBrowserStorage(storage2, data) {
+  if (!browserStorageStatus) {
+    initBrowserStorage();
+  }
+  function store(key2) {
+    let func;
+    if (!browserStorageConfig[key2] || !(func = getBrowserStorage(key2))) {
+      return;
+    }
+    const set = browserStorageEmptyItems[key2];
+    let index4;
+    if (set.size) {
+      set.delete(index4 = Array.from(set).shift());
+    } else {
+      index4 = getBrowserStorageItemsCount(func);
+      if (!setBrowserStorageItemsCount(func, index4 + 1)) {
+        return;
+      }
+    }
+    const item = {
+      cached: Math.floor(Date.now() / browserStorageHour),
+      provider: storage2.provider,
+      data
+    };
+    return setStoredItem(
+      func,
+      browserCachePrefix + index4.toString(),
+      JSON.stringify(item)
+    );
+  }
+  if (data.lastModified && !updateLastModified(storage2, data.lastModified)) {
+    return;
+  }
+  if (!Object.keys(data.icons).length) {
+    return;
+  }
+  if (data.not_found) {
+    data = Object.assign({}, data);
+    delete data.not_found;
+  }
+  if (!store("local")) {
+    store("session");
+  }
+}
+function emptyCallback() {
+}
+function loadedNewIcons(storage2) {
+  if (!storage2.iconsLoaderFlag) {
+    storage2.iconsLoaderFlag = true;
+    setTimeout(() => {
+      storage2.iconsLoaderFlag = false;
+      updateCallbacks(storage2);
+    });
+  }
+}
+function loadNewIcons(storage2, icons) {
+  if (!storage2.iconsToLoad) {
+    storage2.iconsToLoad = icons;
+  } else {
+    storage2.iconsToLoad = storage2.iconsToLoad.concat(icons).sort();
+  }
+  if (!storage2.iconsQueueFlag) {
+    storage2.iconsQueueFlag = true;
+    setTimeout(() => {
+      storage2.iconsQueueFlag = false;
+      const { provider, prefix } = storage2;
+      const icons2 = storage2.iconsToLoad;
+      delete storage2.iconsToLoad;
+      let api;
+      if (!icons2 || !(api = getAPIModule(provider))) {
+        return;
+      }
+      const params = api.prepare(provider, prefix, icons2);
+      params.forEach((item) => {
+        sendAPIQuery(provider, item, (data) => {
+          if (typeof data !== "object") {
+            item.icons.forEach((name) => {
+              storage2.missing.add(name);
+            });
+          } else {
+            try {
+              const parsed = addIconSet(
+                storage2,
+                data
+              );
+              if (!parsed.length) {
+                return;
+              }
+              const pending = storage2.pendingIcons;
+              if (pending) {
+                parsed.forEach((name) => {
+                  pending.delete(name);
+                });
+              }
+              storeInBrowserStorage(storage2, data);
+            } catch (err) {
+              console.error(err);
+            }
+          }
+          loadedNewIcons(storage2);
+        });
+      });
+    });
+  }
+}
+function mergeCustomisations(defaults, item) {
+  const result = {
+    ...defaults
+  };
+  for (const key2 in item) {
+    const value = item[key2];
+    const valueType = typeof value;
+    if (key2 in defaultIconSizeCustomisations) {
+      if (value === null || value && (valueType === "string" || valueType === "number")) {
+        result[key2] = value;
+      }
+    } else if (valueType === typeof result[key2]) {
+      result[key2] = key2 === "rotate" ? value % 4 : value;
+    }
+  }
+  return result;
+}
+function flipFromString(custom, flip) {
+  flip.split(separator).forEach((str) => {
+    const value = str.trim();
+    switch (value) {
+      case "horizontal":
+        custom.hFlip = true;
+        break;
+      case "vertical":
+        custom.vFlip = true;
+        break;
+    }
+  });
+}
+function rotateFromString(value, defaultValue = 0) {
+  const units = value.replace(/^-?[0-9.]*/, "");
+  function cleanup(value2) {
+    while (value2 < 0) {
+      value2 += 4;
+    }
+    return value2 % 4;
+  }
+  if (units === "") {
+    const num = parseInt(value);
+    return isNaN(num) ? 0 : cleanup(num);
+  } else if (units !== value) {
+    let split = 0;
+    switch (units) {
+      case "%":
+        split = 25;
+        break;
+      case "deg":
+        split = 90;
+    }
+    if (split) {
+      let num = parseFloat(value.slice(0, value.length - units.length));
+      if (isNaN(num)) {
+        return 0;
+      }
+      num = num / split;
+      return num % 1 === 0 ? cleanup(num) : 0;
+    }
+  }
+  return defaultValue;
+}
+function iconToHTML(body, attributes) {
+  let renderAttribsHTML = body.indexOf("xlink:") === -1 ? "" : ' xmlns:xlink="http://www.w3.org/1999/xlink"';
+  for (const attr in attributes) {
+    renderAttribsHTML += " " + attr + '="' + attributes[attr] + '"';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg"' + renderAttribsHTML + ">" + body + "</svg>";
+}
+function encodeSVGforURL(svg) {
+  return svg.replace(/"/g, "'").replace(/%/g, "%25").replace(/#/g, "%23").replace(/</g, "%3C").replace(/>/g, "%3E").replace(/\s+/g, " ");
+}
+function svgToData(svg) {
+  return "data:image/svg+xml," + encodeSVGforURL(svg);
+}
+function svgToURL(svg) {
+  return 'url("' + svgToData(svg) + '")';
+}
+function fixSize(value) {
+  return value + (value.match(/^[-0-9.]+$/) ? "px" : "");
+}
+function render(icon, props) {
+  const customisations = mergeCustomisations(defaultExtendedIconCustomisations, props);
+  const mode = props.mode || "svg";
+  const componentProps = mode === "svg" ? { ...svgDefaults } : {};
+  if (icon.body.indexOf("xlink:") === -1) {
+    delete componentProps["xmlns:xlink"];
+  }
+  let style = typeof props.style === "string" ? props.style : "";
+  for (let key2 in props) {
+    const value = props[key2];
+    if (value === void 0) {
+      continue;
+    }
+    switch (key2) {
+      case "icon":
+      case "style":
+      case "onLoad":
+      case "mode":
+        break;
+      case "inline":
+      case "hFlip":
+      case "vFlip":
+        customisations[key2] = value === true || value === "true" || value === 1;
+        break;
+      case "flip":
+        if (typeof value === "string") {
+          flipFromString(customisations, value);
+        }
+        break;
+      case "color":
+        style = style + (style.length > 0 && style.trim().slice(-1) !== ";" ? ";" : "") + "color: " + value + "; ";
+        break;
+      case "rotate":
+        if (typeof value === "string") {
+          customisations[key2] = rotateFromString(value);
+        } else if (typeof value === "number") {
+          customisations[key2] = value;
+        }
+        break;
+      case "ariaHidden":
+      case "aria-hidden":
+        if (value !== true && value !== "true") {
+          delete componentProps["aria-hidden"];
+        }
+        break;
+      default:
+        if (key2.slice(0, 3) === "on:") {
+          break;
+        }
+        if (defaultExtendedIconCustomisations[key2] === void 0) {
+          componentProps[key2] = value;
+        }
+    }
+  }
+  const item = iconToSVG(icon, customisations);
+  const renderAttribs = item.attributes;
+  if (customisations.inline) {
+    style = "vertical-align: -0.125em; " + style;
+  }
+  if (mode === "svg") {
+    Object.assign(componentProps, renderAttribs);
+    if (style !== "") {
+      componentProps.style = style;
+    }
+    let localCounter = 0;
+    let id = props.id;
+    if (typeof id === "string") {
+      id = id.replace(/-/g, "_");
+    }
+    return {
+      svg: true,
+      attributes: componentProps,
+      body: replaceIDs(item.body, id ? () => id + "ID" + localCounter++ : "iconifySvelte")
+    };
+  }
+  const { body, width, height } = icon;
+  const useMask = mode === "mask" || (mode === "bg" ? false : body.indexOf("currentColor") !== -1);
+  const html = iconToHTML(body, {
+    ...renderAttribs,
+    width: width + "",
+    height: height + ""
+  });
+  const url = svgToURL(html);
+  const styles = {
+    "--svg": url
+  };
+  const size = (prop) => {
+    const value = renderAttribs[prop];
+    if (value) {
+      styles[prop] = fixSize(value);
+    }
+  };
+  size("width");
+  size("height");
+  Object.assign(styles, commonProps, useMask ? monotoneProps : coloredProps);
+  let customStyle = "";
+  for (const key2 in styles) {
+    customStyle += key2 + ": " + styles[key2] + ";";
+  }
+  componentProps.style = customStyle + style;
+  return {
+    svg: false,
+    attributes: componentProps
+  };
+}
+function checkIconState(icon, state, mounted, callback, onload) {
+  function abortLoading() {
+    if (state.loading) {
+      state.loading.abort();
+      state.loading = null;
+    }
+  }
+  if (typeof icon === "object" && icon !== null && typeof icon.body === "string") {
+    state.name = "";
+    abortLoading();
+    return { data: { ...defaultIconProps, ...icon } };
+  }
+  let iconName;
+  if (typeof icon !== "string" || (iconName = stringToIcon(icon, false, true)) === null) {
+    abortLoading();
+    return null;
+  }
+  const data = getIconData(iconName);
+  if (!data) {
+    if (mounted && (!state.loading || state.loading.name !== icon)) {
+      abortLoading();
+      state.name = "";
+      state.loading = {
+        name: icon,
+        abort: loadIcons([iconName], callback)
+      };
+    }
+    return null;
+  }
+  abortLoading();
+  if (state.name !== icon) {
+    state.name = icon;
+    if (onload && !state.destroyed) {
+      onload(icon);
+    }
+  }
+  const classes = ["iconify"];
+  if (iconName.prefix !== "") {
+    classes.push("iconify--" + iconName.prefix);
+  }
+  if (iconName.provider !== "") {
+    classes.push("iconify--" + iconName.provider);
+  }
+  return { data, classes };
+}
+function generateIcon(icon, props) {
+  return icon ? render({
+    ...defaultIconProps,
+    ...icon
+  }, props) : null;
+}
+function typewriter(node, { speed: speed2 = 1 }) {
+  const textContent = node.textContent || "";
+  const duration = textContent.length / (speed2 * 0.01);
+  return {
+    duration,
+    tick: (t) => {
+      const i = Math.trunc(textContent.length * t);
+      node.textContent = textContent.slice(0, i);
+    }
+  };
+}
+var matchIconName, stringToIcon, validateIconName, defaultIconDimensions, defaultIconTransformations, defaultIconProps, defaultExtendedIconProps, optionalPropertyDefaults, dataStorage, simpleNames, defaultIconSizeCustomisations, defaultIconCustomisations, unitsSplit, unitsTest, isUnsetKeyword, regex, randomPrefix, counter, storage, configStorage, fallBackAPISources, fallBackAPI, detectFetch, fetchModule, prepare, send, fetchAPIModule, idCounter, defaultConfig, redundancyCache, browserCacheVersion, browserCachePrefix, browserCacheCountKey, browserCacheVersionKey, browserStorageHour, browserStorageCacheExpiration, browserStorageConfig, browserStorageEmptyItems, browserStorageStatus, _window, loadIcons, separator, defaultExtendedIconCustomisations, svgDefaults, commonProps, monotoneProps, coloredProps, propsToAdd, propsToAddTo, Icon, lightstates, css, Lightbulb, Hidden_object, Single_typewriter, Page;
 var init_page_svelte = __esm({
   ".svelte-kit/output/server/entries/pages/_page.svelte.js"() {
-    init_chunks();
+    init_index2();
     init_svelte_sound();
-    ballonpop = "/_app/immutable/assets/ballonpop.12ac8348.wav";
-    Ballons_animated = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      let { stringColor = "#597B91" } = $$props;
-      let ballonColor = "#FF473E";
-      let { highlightColor = "#ffffff" } = $$props;
-      let { width = "100" } = $$props;
-      let { height = "100" } = $$props;
-      new Sound(ballonpop, { volume: 0.5 });
-      let balloonTop = 0;
-      let balloonLeft = 0;
-      if ($$props.stringColor === void 0 && $$bindings.stringColor && stringColor !== void 0)
-        $$bindings.stringColor(stringColor);
-      if ($$props.highlightColor === void 0 && $$bindings.highlightColor && highlightColor !== void 0)
-        $$bindings.highlightColor(highlightColor);
-      if ($$props.width === void 0 && $$bindings.width && width !== void 0)
-        $$bindings.width(width);
-      if ($$props.height === void 0 && $$bindings.height && height !== void 0)
-        $$bindings.height(height);
-      return `${`<div class="absolute animate-move-up-to-spot z-20"${add_attribute("style", `top: ${balloonTop}px; left: ${balloonLeft}px;`, 0)}><button class="z-10 rounded-full animate-wiggle animate-infinite animate-duration-[3000ms]"><svg xmlns="http://www.w3.org/2000/svg"${add_attribute("width", width, 0)}${add_attribute("height", height, 0)} viewBox="0 0 512 512"><path${add_attribute("fill", stringColor, 0)} d="M418.739 509.346a5.25 5.25 0 0 1-5.25-5.25c0-17.544-6.158-30.82-19.38-41.783c-12.365-10.254-29.586-17.544-47.818-25.262c-24.229-10.257-49.284-20.863-69.091-40.203c-22.826-22.288-33.921-52.182-33.921-91.389a5.25 5.25 0 0 1 10.5 0c0 36.23 10.061 63.666 30.757 83.875c18.388 17.956 42.515 28.169 65.848 38.047c37.853 16.023 73.604 31.159 73.604 76.715a5.249 5.249 0 0 1-5.249 5.25z"></path><path${add_attribute("fill", ballonColor, 0)} d="M259.93 302.848c.476 1.218.938 2.419 1.353 3.576c.401 1.072.768 2.109 1.114 3.091c.342 .983.7 1.912.929 2.77c.466 1.715.428 3.145.242 4.146c-.183 1.001-.538 1.572-.538 1.572c-4.965 8.009-15.482 10.476-23.491 5.511a17.323 17.323 0 0 1-5.511-5.511s-.354-.572-.538-1.572c-.186-1.001-.224-2.43 .242-4.146c.229-.858.586-1.787.929-2.77c.346-.983.713-2.019 1.114-3.091c.415-1.157.877-2.358 1.353-3.576c-34.022-13.918-90.096-81.107-106.883-144.182a123.21 123.21 0 0 1-4.899-34.483C125.347 56.151 180.497 1 248.529 1s123.182 55.151 123.182 123.182a123.21 123.21 0 0 1-4.899 34.483c-16.787 63.075-72.86 130.265-106.882 144.183z"></path><path${add_attribute("fill", highlightColor, 0)} d="M195.957 124.182c0 22.075-10.33 39.97-23.073 39.97s-23.073-17.895-23.073-39.97s10.33-39.97 23.073-39.97c12.743.001 23.073 17.896 23.073 39.97z"></path></svg></button></div>`}`;
+    init_chunks();
+    matchIconName = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    stringToIcon = (value, validate, allowSimpleName, provider = "") => {
+      const colonSeparated = value.split(":");
+      if (value.slice(0, 1) === "@") {
+        if (colonSeparated.length < 2 || colonSeparated.length > 3) {
+          return null;
+        }
+        provider = colonSeparated.shift().slice(1);
+      }
+      if (colonSeparated.length > 3 || !colonSeparated.length) {
+        return null;
+      }
+      if (colonSeparated.length > 1) {
+        const name2 = colonSeparated.pop();
+        const prefix = colonSeparated.pop();
+        const result = {
+          // Allow provider without '@': "provider:prefix:name"
+          provider: colonSeparated.length > 0 ? colonSeparated[0] : provider,
+          prefix,
+          name: name2
+        };
+        return validate && !validateIconName(result) ? null : result;
+      }
+      const name = colonSeparated[0];
+      const dashSeparated = name.split("-");
+      if (dashSeparated.length > 1) {
+        const result = {
+          provider,
+          prefix: dashSeparated.shift(),
+          name: dashSeparated.join("-")
+        };
+        return validate && !validateIconName(result) ? null : result;
+      }
+      if (allowSimpleName && provider === "") {
+        const result = {
+          provider,
+          prefix: "",
+          name
+        };
+        return validate && !validateIconName(result, allowSimpleName) ? null : result;
+      }
+      return null;
+    };
+    validateIconName = (icon, allowSimpleName) => {
+      if (!icon) {
+        return false;
+      }
+      return !!((icon.provider === "" || icon.provider.match(matchIconName)) && (allowSimpleName && icon.prefix === "" || icon.prefix.match(matchIconName)) && icon.name.match(matchIconName));
+    };
+    defaultIconDimensions = Object.freeze(
+      {
+        left: 0,
+        top: 0,
+        width: 16,
+        height: 16
+      }
+    );
+    defaultIconTransformations = Object.freeze({
+      rotate: 0,
+      vFlip: false,
+      hFlip: false
     });
-    css$1 = {
+    defaultIconProps = Object.freeze({
+      ...defaultIconDimensions,
+      ...defaultIconTransformations
+    });
+    defaultExtendedIconProps = Object.freeze({
+      ...defaultIconProps,
+      body: "",
+      hidden: false
+    });
+    optionalPropertyDefaults = {
+      provider: "",
+      aliases: {},
+      not_found: {},
+      ...defaultIconDimensions
+    };
+    dataStorage = /* @__PURE__ */ Object.create(null);
+    simpleNames = false;
+    defaultIconSizeCustomisations = Object.freeze({
+      width: null,
+      height: null
+    });
+    defaultIconCustomisations = Object.freeze({
+      // Dimensions
+      ...defaultIconSizeCustomisations,
+      // Transformations
+      ...defaultIconTransformations
+    });
+    unitsSplit = /(-?[0-9.]*[0-9]+[0-9.]*)/g;
+    unitsTest = /^-?[0-9.]*[0-9]+[0-9.]*$/g;
+    isUnsetKeyword = (value) => value === "unset" || value === "undefined" || value === "none";
+    regex = /\sid="(\S+)"/g;
+    randomPrefix = "IconifyId" + Date.now().toString(16) + (Math.random() * 16777216 | 0).toString(16);
+    counter = 0;
+    storage = /* @__PURE__ */ Object.create(null);
+    configStorage = /* @__PURE__ */ Object.create(null);
+    fallBackAPISources = [
+      "https://api.simplesvg.com",
+      "https://api.unisvg.com"
+    ];
+    fallBackAPI = [];
+    while (fallBackAPISources.length > 0) {
+      if (fallBackAPISources.length === 1) {
+        fallBackAPI.push(fallBackAPISources.shift());
+      } else {
+        if (Math.random() > 0.5) {
+          fallBackAPI.push(fallBackAPISources.shift());
+        } else {
+          fallBackAPI.push(fallBackAPISources.pop());
+        }
+      }
+    }
+    configStorage[""] = createAPIConfig({
+      resources: ["https://api.iconify.design"].concat(fallBackAPI)
+    });
+    detectFetch = () => {
+      let callback;
+      try {
+        callback = fetch;
+        if (typeof callback === "function") {
+          return callback;
+        }
+      } catch (err) {
+      }
+    };
+    fetchModule = detectFetch();
+    prepare = (provider, prefix, icons) => {
+      const results = [];
+      const maxLength = calculateMaxLength(provider, prefix);
+      const type = "icons";
+      let item = {
+        type,
+        provider,
+        prefix,
+        icons: []
+      };
+      let length = 0;
+      icons.forEach((name, index4) => {
+        length += name.length + 1;
+        if (length >= maxLength && index4 > 0) {
+          results.push(item);
+          item = {
+            type,
+            provider,
+            prefix,
+            icons: []
+          };
+          length = name.length;
+        }
+        item.icons.push(name);
+      });
+      results.push(item);
+      return results;
+    };
+    send = (host, params, callback) => {
+      if (!fetchModule) {
+        callback("abort", 424);
+        return;
+      }
+      let path = getPath(params.provider);
+      switch (params.type) {
+        case "icons": {
+          const prefix = params.prefix;
+          const icons = params.icons;
+          const iconsList = icons.join(",");
+          const urlParams = new URLSearchParams({
+            icons: iconsList
+          });
+          path += prefix + ".json?" + urlParams.toString();
+          break;
+        }
+        case "custom": {
+          const uri = params.uri;
+          path += uri.slice(0, 1) === "/" ? uri.slice(1) : uri;
+          break;
+        }
+        default:
+          callback("abort", 400);
+          return;
+      }
+      let defaultError = 503;
+      fetchModule(host + path).then((response) => {
+        const status = response.status;
+        if (status !== 200) {
+          setTimeout(() => {
+            callback(shouldAbort(status) ? "abort" : "next", status);
+          });
+          return;
+        }
+        defaultError = 501;
+        return response.json();
+      }).then((data) => {
+        if (typeof data !== "object" || data === null) {
+          setTimeout(() => {
+            if (data === 404) {
+              callback("abort", data);
+            } else {
+              callback("next", defaultError);
+            }
+          });
+          return;
+        }
+        setTimeout(() => {
+          callback("success", data);
+        });
+      }).catch(() => {
+        callback("next", defaultError);
+      });
+    };
+    fetchAPIModule = {
+      prepare,
+      send
+    };
+    idCounter = 0;
+    defaultConfig = {
+      resources: [],
+      index: 0,
+      timeout: 2e3,
+      rotate: 750,
+      random: false,
+      dataAfterTimeout: false
+    };
+    redundancyCache = /* @__PURE__ */ Object.create(null);
+    browserCacheVersion = "iconify2";
+    browserCachePrefix = "iconify";
+    browserCacheCountKey = browserCachePrefix + "-count";
+    browserCacheVersionKey = browserCachePrefix + "-version";
+    browserStorageHour = 36e5;
+    browserStorageCacheExpiration = 168;
+    browserStorageConfig = {
+      local: true,
+      session: true
+    };
+    browserStorageEmptyItems = {
+      local: /* @__PURE__ */ new Set(),
+      session: /* @__PURE__ */ new Set()
+    };
+    browserStorageStatus = false;
+    _window = typeof window === "undefined" ? {} : window;
+    loadIcons = (icons, callback) => {
+      const cleanedIcons = listToIcons(icons, true, allowSimpleNames());
+      const sortedIcons = sortIcons(cleanedIcons);
+      if (!sortedIcons.pending.length) {
+        let callCallback = true;
+        if (callback) {
+          setTimeout(() => {
+            if (callCallback) {
+              callback(
+                sortedIcons.loaded,
+                sortedIcons.missing,
+                sortedIcons.pending,
+                emptyCallback
+              );
+            }
+          });
+        }
+        return () => {
+          callCallback = false;
+        };
+      }
+      const newIcons = /* @__PURE__ */ Object.create(null);
+      const sources = [];
+      let lastProvider, lastPrefix;
+      sortedIcons.pending.forEach((icon) => {
+        const { provider, prefix } = icon;
+        if (prefix === lastPrefix && provider === lastProvider) {
+          return;
+        }
+        lastProvider = provider;
+        lastPrefix = prefix;
+        sources.push(getStorage(provider, prefix));
+        const providerNewIcons = newIcons[provider] || (newIcons[provider] = /* @__PURE__ */ Object.create(null));
+        if (!providerNewIcons[prefix]) {
+          providerNewIcons[prefix] = [];
+        }
+      });
+      sortedIcons.pending.forEach((icon) => {
+        const { provider, prefix, name } = icon;
+        const storage2 = getStorage(provider, prefix);
+        const pendingQueue = storage2.pendingIcons || (storage2.pendingIcons = /* @__PURE__ */ new Set());
+        if (!pendingQueue.has(name)) {
+          pendingQueue.add(name);
+          newIcons[provider][prefix].push(name);
+        }
+      });
+      sources.forEach((storage2) => {
+        const { provider, prefix } = storage2;
+        if (newIcons[provider][prefix].length) {
+          loadNewIcons(storage2, newIcons[provider][prefix]);
+        }
+      });
+      return callback ? storeCallback(callback, sortedIcons, sources) : emptyCallback;
+    };
+    separator = /[\s,]+/;
+    defaultExtendedIconCustomisations = {
+      ...defaultIconCustomisations,
+      inline: false
+    };
+    svgDefaults = {
+      "xmlns": "http://www.w3.org/2000/svg",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+      "aria-hidden": true,
+      "role": "img"
+    };
+    commonProps = {
+      display: "inline-block"
+    };
+    monotoneProps = {
+      "background-color": "currentColor"
+    };
+    coloredProps = {
+      "background-color": "transparent"
+    };
+    propsToAdd = {
+      image: "var(--svg)",
+      repeat: "no-repeat",
+      size: "100% 100%"
+    };
+    propsToAddTo = {
+      "-webkit-mask": monotoneProps,
+      "mask": monotoneProps,
+      "background": coloredProps
+    };
+    for (const prefix in propsToAddTo) {
+      const list = propsToAddTo[prefix];
+      for (const prop in propsToAdd) {
+        list[prefix + "-" + prop] = propsToAdd[prop];
+      }
+    }
+    allowSimpleNames(true);
+    setAPIModule("", fetchAPIModule);
+    if (typeof document !== "undefined" && typeof window !== "undefined") {
+      initBrowserStorage();
+      const _window2 = window;
+      if (_window2.IconifyPreload !== void 0) {
+        const preload = _window2.IconifyPreload;
+        const err = "Invalid IconifyPreload syntax.";
+        if (typeof preload === "object" && preload !== null) {
+          (preload instanceof Array ? preload : [preload]).forEach((item) => {
+            try {
+              if (
+                // Check if item is an object and not null/array
+                typeof item !== "object" || item === null || item instanceof Array || // Check for 'icons' and 'prefix'
+                typeof item.icons !== "object" || typeof item.prefix !== "string" || // Add icon set
+                !addCollection(item)
+              ) {
+                console.error(err);
+              }
+            } catch (e) {
+              console.error(err);
+            }
+          });
+        }
+      }
+      if (_window2.IconifyProviders !== void 0) {
+        const providers = _window2.IconifyProviders;
+        if (typeof providers === "object" && providers !== null) {
+          for (let key2 in providers) {
+            const err = "IconifyProviders[" + key2 + "] is invalid.";
+            try {
+              const value = providers[key2];
+              if (typeof value !== "object" || !value || value.resources === void 0) {
+                continue;
+              }
+              if (!addAPIProvider(key2, value)) {
+                console.error(err);
+              }
+            } catch (e) {
+              console.error(err);
+            }
+          }
+        }
+      }
+    }
+    Icon = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+      const state = {
+        // Last icon name
+        name: "",
+        // Loading status
+        loading: null,
+        // Destroyed status
+        destroyed: false
+      };
+      let mounted = false;
+      let data;
+      const onLoad = (icon) => {
+        if (typeof $$props.onLoad === "function") {
+          $$props.onLoad(icon);
+        }
+        const dispatch = createEventDispatcher();
+        dispatch("load", { icon });
+      };
+      function loaded() {
+      }
+      onDestroy(() => {
+        state.destroyed = true;
+        if (state.loading) {
+          state.loading.abort();
+          state.loading = null;
+        }
+      });
+      {
+        {
+          const iconData = checkIconState($$props.icon, state, mounted, loaded, onLoad);
+          data = iconData ? generateIcon(iconData.data, $$props) : null;
+          if (data && iconData.classes) {
+            data.attributes["class"] = (typeof $$props["class"] === "string" ? $$props["class"] + " " : "") + iconData.classes.join(" ");
+          }
+        }
+      }
+      return `${data ? `${data.svg ? `<svg${spread([escape_object(data.attributes)], {})}><!-- HTML_TAG_START -->${data.body}<!-- HTML_TAG_END --></svg>` : `<span${spread([escape_object(data.attributes)], {})}></span>`}` : ``}`;
+    });
+    lightstates = writable(false);
+    css = {
       code: ".transition.svelte-1t6u28v{transition:fill 1s ease}",
       map: null
     };
@@ -2554,8 +2523,11 @@ var init_page_svelte = __esm({
       let { constantlyChangeColor = false } = $$props;
       let { yPosition = xAdjust } = $$props;
       let { xPosition = yAdjust } = $$props;
+      lightstates.subscribe((value) => {
+        lightState = value;
+      });
       let x = yPosition;
-      let y = xPosition - 400;
+      let y = xPosition - 300;
       if ($$props.mouseFollow === void 0 && $$bindings.mouseFollow && mouseFollow !== void 0)
         $$bindings.mouseFollow(mouseFollow);
       if ($$props.changeColor === void 0 && $$bindings.changeColor && changeColor !== void 0)
@@ -2568,28 +2540,78 @@ var init_page_svelte = __esm({
         $$bindings.yPosition(yPosition);
       if ($$props.xPosition === void 0 && $$bindings.xPosition && xPosition !== void 0)
         $$bindings.xPosition(xPosition);
-      $$result.css.add(css$1);
+      $$result.css.add(css);
       return `
 <div class="relative p-16 grid grid-flow-col"${add_attribute("style", `left: ${x - xAdjust}px; top: ${y - yAdjust * 2.15}px;`, 0)}>${lightState ? `<button class="absolute p-20 -z-0 rounded-full animate-fade blur-3xl" style="${"background-color: " + escape(glass, true) + "; top: 2px; left: 2px;"}"></button>` : ``}
-  <button class="z-10 hover:animate-wiggle-more"><svg class="rotate-180" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><path class="transition svelte-1t6u28v"${add_attribute("fill", glass, 0)} d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06z"></path><path class="animate-none"${add_attribute("fill", circleColor, 0)} d="M22.167 32.5c0 .828-2.234 2.5-4.167 2.5c-1.933 0-4.167-1.672-4.167-2.5c0-.828 2.233-.5 4.167-.5c1.933 0 4.167-.328 4.167.5z"></path><path class="animate-none"${add_attribute("fill", filament, 0)} d="M22.707 10.293a.999.999 0 0 0-1.414 0L18 13.586l-3.293-3.293a.999.999 0 1 0-1.414 1.414L17 15.414V26a1 1 0 1 0 2 0V15.414l3.707-3.707a.999.999 0 0 0 0-1.414z"></path><path class="animate-none"${add_attribute("fill", bottomRectColor, 0)} d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12v6z"></path><path class="animate-none"${add_attribute("fill", linesColor, 0)} d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014zm0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014z"></path></svg></button></div>
+  <button class="z-10 hover:animate-wiggle-more"><svg class="rotate-180" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><path class="transition z-10 svelte-1t6u28v"${add_attribute("fill", glass, 0)} d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06z"></path><path class="animate-none"${add_attribute("fill", circleColor, 0)} d="M22.167 32.5c0 .828-2.234 2.5-4.167 2.5c-1.933 0-4.167-1.672-4.167-2.5c0-.828 2.233-.5 4.167-.5c1.933 0 4.167-.328 4.167.5z"></path><path class="animate-none"${add_attribute("fill", filament, 0)} d="M22.707 10.293a.999.999 0 0 0-1.414 0L18 13.586l-3.293-3.293a.999.999 0 1 0-1.414 1.414L17 15.414V26a1 1 0 1 0 2 0V15.414l3.707-3.707a.999.999 0 0 0 0-1.414z"></path><path class="animate-none"${add_attribute("fill", bottomRectColor, 0)} d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12v6z"></path><path class="animate-none"${add_attribute("fill", linesColor, 0)} d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014zm0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a.999.999 0 0 1-.822 1.15l-12 2a.927.927 0 0 1-.165.014z"></path></svg></button></div>
 
 `;
     });
-    css = {
-      code: ".background.svelte-1noth81{background:linear-gradient(250deg, rgb(242, 182, 104), rgb(150, 150, 250));display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden}",
-      map: null
-    };
+    Hidden_object = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+      let x = 0;
+      let y = 0;
+      lightstates.subscribe((value) => {
+      });
+      return `<div class="p-20 absolute" style="${"top:" + escape(x, true) + "px; left:" + escape(y, true) + "px; opacity:1"}">${``}
+  ${`<div class="absolute top-0 left-0 z-10 p-20 bg-white/5 blur-3xl rounded-full"></div>`}</div>`;
+    });
+    Single_typewriter = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+      let { speed = 1.5 } = $$props;
+      let { textToDisplay = [] } = $$props;
+      let { delay = 2e3 } = $$props;
+      let { noloop = true } = $$props;
+      let currentTextIndex = 0;
+      if ($$props.speed === void 0 && $$bindings.speed && speed !== void 0)
+        $$bindings.speed(speed);
+      if ($$props.textToDisplay === void 0 && $$bindings.textToDisplay && textToDisplay !== void 0)
+        $$bindings.textToDisplay(textToDisplay);
+      if ($$props.delay === void 0 && $$bindings.delay && delay !== void 0)
+        $$bindings.delay(delay);
+      if ($$props.noloop === void 0 && $$bindings.noloop && noloop !== void 0)
+        $$bindings.noloop(noloop);
+      if ($$props.typewriter === void 0 && $$bindings.typewriter && typewriter !== void 0)
+        $$bindings.typewriter(typewriter);
+      return `${textToDisplay.length > 0 ? `
+    <div class="absolute font-thin text-4xl p-30 text-orange-300" style="top: 10px;">${escape(textToDisplay[currentTextIndex])}</div>` : ``}`;
+    });
     Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-      const numOfBallons = Math.floor(Math.random() * 20) + 5;
-      const ballonsArray = Array.from({ length: numOfBallons }, (_, i2) => i2 + 1);
-      $$result.css.add(css);
+      const numOfBallons = Math.floor(Math.random() * 20) + 15;
+      Array.from({ length: numOfBallons }, (_, i2) => i2 + 1);
+      lightstates.subscribe((value) => {
+      });
       return `
 
-<body class="background h-[200vh] overflow-hidden svelte-1noth81">${each(ballonsArray, (_, i) => {
-        return `${validate_component(Ballons_animated, "BallonsAnimated").$$render($$result, { key: i }, {}, {})}`;
-      })}
-  ${validate_component(Lightbulb, "Lightbulb").$$render($$result, { mouseFollow: "" }, {}, {})}
-</body>`;
+<body class="h-[200vh] w-[200vw] overflow-hidden" style="display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;">${`${validate_component(Single_typewriter, "SingleTypewriter").$$render(
+        $$result,
+        {
+          delay: 4e3,
+          speed: 1.5,
+          textToDisplay: ["", "It's kinda dark in here...", "Find the Light Switch"]
+        },
+        {},
+        {}
+      )}
+    ${validate_component(Lightbulb, "Lightbulb").$$render($$result, {}, {}, {})}
+
+    ${validate_component(Hidden_object, "HiddenObject").$$render($$result, {}, {}, {
+        default: () => {
+          return `<button class="p-10">${`${validate_component(Icon, "Icon").$$render(
+            $$result,
+            {
+              icon: "line-md:switch-off-filled-to-switch-filled-transition",
+              height: "100",
+              width: "100"
+            },
+            {},
+            {}
+          )}`}</button>`;
+        }
+      })}`}
+  
+
+  
+  ${`<div id="blackout" class="absolute top-0 left-0 h-full w-full -z-40 bg-black"></div>`}</body>
+`;
     });
   }
 });
@@ -2608,14 +2630,14 @@ var init__3 = __esm({
   ".svelte-kit/output/server/nodes/2.js"() {
     index3 = 2;
     component3 = async () => component_cache3 ?? (component_cache3 = (await Promise.resolve().then(() => (init_page_svelte(), page_svelte_exports))).default);
-    imports3 = ["_app/immutable/nodes/2.756f1252.js", "_app/immutable/chunks/index.fcb0ea49.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.de31db7d.js"];
-    stylesheets3 = ["_app/immutable/assets/2.8218c452.css"];
+    imports3 = ["_app/immutable/nodes/2.b7b3bf0b.js", "_app/immutable/chunks/index.7df76734.js", "_app/immutable/chunks/index.33058e4b.js"];
+    stylesheets3 = ["_app/immutable/assets/2.2b8e8e82.css"];
     fonts3 = [];
   }
 });
 
 // .svelte-kit/output/server/chunks/internal.js
-init_chunks();
+init_index2();
 var base = "";
 var assets = base;
 var initial = { base, assets };
@@ -2783,7 +2805,7 @@ var options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "1i3sk8u"
+  version_hash: "zti8sb"
 };
 function get_hooks() {
   return {};
@@ -4078,53 +4100,6 @@ async function stream_to_string(stream) {
   }
   return result;
 }
-var subscriber_queue = [];
-function readable(value, start) {
-  return {
-    subscribe: writable(value, start).subscribe
-  };
-}
-function writable(value, start = noop) {
-  let stop;
-  const subscribers = /* @__PURE__ */ new Set();
-  function set(new_value) {
-    if (safe_not_equal(value, new_value)) {
-      value = new_value;
-      if (stop) {
-        const run_queue = !subscriber_queue.length;
-        for (const subscriber of subscribers) {
-          subscriber[1]();
-          subscriber_queue.push(subscriber, value);
-        }
-        if (run_queue) {
-          for (let i = 0; i < subscriber_queue.length; i += 2) {
-            subscriber_queue[i][0](subscriber_queue[i + 1]);
-          }
-          subscriber_queue.length = 0;
-        }
-      }
-    }
-  }
-  function update(fn) {
-    set(fn(value));
-  }
-  function subscribe2(run2, invalidate = noop) {
-    const subscriber = [run2, invalidate];
-    subscribers.add(subscriber);
-    if (subscribers.size === 1) {
-      stop = start(set) || noop;
-    }
-    run2(value);
-    return () => {
-      subscribers.delete(subscriber);
-      if (subscribers.size === 0 && stop) {
-        stop();
-        stop = null;
-      }
-    };
-  }
-  return { set, update, subscribe: subscribe2 };
-}
 function hash(...values) {
   let hash2 = 5381;
   for (const value of values) {
@@ -4699,12 +4674,12 @@ async function render_response({
 		<link ${attributes.join(" ")}>`;
     }
   }
-  const global2 = `__sveltekit_${options2.version_hash}`;
+  const global = `__sveltekit_${options2.version_hash}`;
   const { data, chunks } = get_data(
     event,
     options2,
     branch.map((b) => b.server_data),
-    global2
+    global
   );
   if (page_config.ssr && page_config.csr) {
     body += `
@@ -4745,7 +4720,7 @@ async function render_response({
 							else fulfil(data);
 						}`);
     }
-    blocks.push(`${global2} = {
+    blocks.push(`${global} = {
 						${properties.join(",\n						")}
 					};`);
     const args = ["app", "element"];
@@ -4871,7 +4846,7 @@ async function render_response({
     }
   );
 }
-function get_data(event, options2, nodes, global2) {
+function get_data(event, options2, nodes, global) {
   let promise_id = 1;
   let count = 0;
   const { iterator, push, done } = create_async_iterator();
@@ -4905,13 +4880,13 @@ function get_data(event, options2, nodes, global2) {
             data = void 0;
             str = uneval({ id, data, error: error2 }, replacer);
           }
-          push(`<script>${global2}.resolve(${str})<\/script>
+          push(`<script>${global}.resolve(${str})<\/script>
 `);
           if (count === 0)
             done();
         }
       );
-      return `${global2}.defer(${id})`;
+      return `${global}.defer(${id})`;
     }
   }
   try {
@@ -6201,7 +6176,7 @@ var manifest = (() => {
     assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png"]),
     mimeTypes: { ".ico": "image/vnd.microsoft.icon", ".png": "image/png" },
     _: {
-      client: { "start": "_app/immutable/entry/start.d0195114.js", "app": "_app/immutable/entry/app.1f6b8bcb.js", "imports": ["_app/immutable/entry/start.d0195114.js", "_app/immutable/chunks/index.fcb0ea49.js", "_app/immutable/chunks/singletons.4f04fbb8.js", "_app/immutable/chunks/index.de31db7d.js", "_app/immutable/entry/app.1f6b8bcb.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.fcb0ea49.js"], "stylesheets": [], "fonts": [] },
+      client: { "start": "_app/immutable/entry/start.ec61e830.js", "app": "_app/immutable/entry/app.e010f568.js", "imports": ["_app/immutable/entry/start.ec61e830.js", "_app/immutable/chunks/index.7df76734.js", "_app/immutable/chunks/singletons.f29ac4fb.js", "_app/immutable/chunks/index.33058e4b.js", "_app/immutable/entry/app.e010f568.js", "_app/immutable/chunks/index.7df76734.js"], "stylesheets": [], "fonts": [] },
       nodes: [
         __memo(() => Promise.resolve().then(() => (init__(), __exports))),
         __memo(() => Promise.resolve().then(() => (init__2(), __exports2))),
@@ -6256,17 +6231,6 @@ cookie/index.js:
    * Copyright(c) 2012-2014 Roman Shtylman
    * Copyright(c) 2015 Douglas Christopher Wilson
    * MIT Licensed
-   *)
-
-svelte-sound/dist/howler.core-e669a980.js:
-  (*!
-   *  howler.js v2.2.3
-   *  howlerjs.com
-   *
-   *  (c) 2013-2020, James Simpson of GoldFire Studios
-   *  goldfirestudios.com
-   *
-   *  MIT License
    *)
 */
 //# sourceMappingURL=index.js.map
