@@ -130,6 +130,60 @@
     setSVGPosition();
     playSound();
   }
+
+  // Array of random words
+  const words = [
+    "You're amazing!",
+    "Keep going!",
+    "Well done!",
+    "You got this!",
+    "You just Incredible",
+    "You shine!",
+    "Keep it up!",
+    "You inspire!",
+    "Unstoppable!",
+    "Fantastic work!",
+    "Just do it!",
+    "I love you",
+    "I believe in you",
+    "You make me smile",
+    "You're a gift to others",
+    "You're a gift to the world",
+    "You're a gift to yourself",
+    "Your smile is contagious",
+    "Your soul is beautiful",
+    "Your heart is beautiful",
+    "You're so kind",
+    "You're so smart",
+    "You're so strong",
+    "You matter to me.",
+    "Make it happen.",
+    "You're a unstoppable",
+    "Own your power.",
+    "I take Decisive action.",
+    "Your vision, unparalleled.",
+    "Ingenious problem-solver.",
+    "I believe in you.",
+    "Don't give up.",
+    "I don't give up.",
+    "My past does not define me.",
+    "Growth mindset.",
+    "I have Inner strength.",
+    "I Challenge limits.",
+    "Be the change.",
+    "I like you",
+  ];
+
+  // Function to get a random word from the array
+  function getRandomWord(): string {
+    return words[Math.floor(Math.random() * words.length)];
+  }
+
+  // State for holding a random word
+  let randomWord = getRandomWord();
+
+  // State to decide if an SVG should be displayed or a word
+  let showSVG = Math.random() < 0.3; // Randomly true or false
 </script>
 
 {#if !isPopped}
@@ -164,21 +218,27 @@
     </button>
   </div>
 {:else}
+  <!-- Render something when the balloon is popped -->
   <button
     class="absolute animate-fall-and-fade"
     style={`top: ${svgY}px; left: ${svgX}px;`}
   >
     <div class="animate-wiggle">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        ><path
-          fill="gold"
-          d="m19 1l-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4L6.5 9.5L1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"
-        /></svg
-      >
+      <!-- Render some element when the balloon is popped -->
+      {#if showSVG}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          ><path
+            fill="gold"
+            d="m19 1l-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4L6.5 9.5L1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"
+          /></svg
+        >
+      {:else}
+        <span class="text-xl font-bold">{randomWord}</span>
+      {/if}
     </div>
   </button>
 {/if}

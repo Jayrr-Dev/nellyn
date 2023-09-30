@@ -43,7 +43,7 @@
   {/if}
   {#if !visible}
     <div
-      class="absolute top-0 left-0 z-10 p-20 bg-white/5 blur-3xl rounded-full"
+      class="absolute top-0 left-0 z-10 p-20 bg-white/0 blur-3xl rounded-full"
       on:mouseenter={visibility}
     />
   {/if}

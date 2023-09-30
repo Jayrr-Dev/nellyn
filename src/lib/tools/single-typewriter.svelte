@@ -7,11 +7,16 @@
   export let textToDisplay: string[] = [];
   export let delay: number = 2000;
   export let noloop: boolean = true;
-
+  export let color: string = "rgb(253 186 116)";
+  export let fontStyle: string = "normal";
+  export let fontFamily: string = "Sans-serif";
+  export let bottom = "30px";
+  let top: any = "";
   let currentTextIndex = 0;
   let triggerRender = true; // New flag to force initial render
 
   onMount(() => {
+    top = window.innerHeight * 0.9;
     function cycleText() {
       // If noloop is true and it's the last text, return
       if (noloop && currentTextIndex === textToDisplay.length - 1) {
@@ -56,8 +61,8 @@
     <!-- Use the new flag here -->
     <div
       in:typewriter={{ speed }}
-      class="absolute font-thin text-4xl p-30 text-orange-300"
-      style="top: 10px;"
+      class="absolute font-thin text-4xl p-30"
+      style="top:{top}; bottom:{bottom}; color:{color};font-style:{fontStyle}; font-family:{fontFamily}"
     >
       {textToDisplay[currentTextIndex]}
     </div>

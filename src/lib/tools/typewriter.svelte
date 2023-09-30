@@ -55,7 +55,7 @@
 </script>
 
 {#key key}
-  <p class="h-5 p-20" in:typewriter={{ speed }}>
+  <p class=" h-5 p-20" in:typewriter={{ speed }}>
     {messages[key]}
   </p>
 {/key}
