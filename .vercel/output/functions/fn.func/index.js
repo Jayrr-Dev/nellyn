@@ -756,7 +756,7 @@ var init__2 = __esm({
   ".svelte-kit/output/server/nodes/1.js"() {
     index2 = 1;
     component2 = async () => component_cache2 ?? (component_cache2 = (await Promise.resolve().then(() => (init_error_svelte(), error_svelte_exports))).default);
-    imports2 = ["_app/immutable/nodes/1.982a94e1.js", "_app/immutable/chunks/index.51f98ca3.js", "_app/immutable/chunks/singletons.d6fefa03.js", "_app/immutable/chunks/index.4da43e74.js"];
+    imports2 = ["_app/immutable/nodes/1.18621e8f.js", "_app/immutable/chunks/index.51f98ca3.js", "_app/immutable/chunks/singletons.8721e390.js", "_app/immutable/chunks/index.4da43e74.js"];
     stylesheets2 = [];
     fonts2 = [];
   }
@@ -4612,7 +4612,7 @@ var init_page_svelte = __esm({
           return `
       <button>${`${validate_component(Draggble_object, "DraggbleObject").$$render($$result, {}, {}, {
             default: () => {
-              return `<div title="Double Click" class="w-44 h-44"><img class="pointer-events-none" src="src/lib/img/b-cover.png" alt="banner"></div>`;
+              return `<div title="Double Click" class="w-44 h-44"><img class="pointer-events-none" src="/img/b-cover.png" alt="banner"></div>`;
             }
           })}`}</button>`;
         }
@@ -4636,7 +4636,7 @@ var init__3 = __esm({
   ".svelte-kit/output/server/nodes/2.js"() {
     index3 = 2;
     component3 = async () => component_cache3 ?? (component_cache3 = (await Promise.resolve().then(() => (init_page_svelte(), page_svelte_exports))).default);
-    imports3 = ["_app/immutable/nodes/2.ef9cb0c4.js", "_app/immutable/chunks/index.51f98ca3.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.4da43e74.js"];
+    imports3 = ["_app/immutable/nodes/2.d9c20c82.js", "_app/immutable/chunks/index.51f98ca3.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.4da43e74.js"];
     stylesheets3 = ["_app/immutable/assets/2.7848f722.css"];
     fonts3 = [];
   }
@@ -4811,7 +4811,7 @@ var options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "yu3zq3"
+  version_hash: "1j3nfdm"
 };
 function get_hooks() {
   return {};
@@ -8179,10 +8179,10 @@ var manifest = (() => {
   return {
     appDir: "_app",
     appPath: "_app",
-    assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png"]),
+    assets: /* @__PURE__ */ new Set(["favicon.ico", "favicon.png", "img/24.png", "img/ada.png", "img/b-card.png", "img/b-cover.png", "img/bd-background.png", "img/bd-banner.png", "img/musicplayer.png"]),
     mimeTypes: { ".ico": "image/vnd.microsoft.icon", ".png": "image/png" },
     _: {
-      client: { "start": "_app/immutable/entry/start.98f30857.js", "app": "_app/immutable/entry/app.1d94f9bc.js", "imports": ["_app/immutable/entry/start.98f30857.js", "_app/immutable/chunks/index.51f98ca3.js", "_app/immutable/chunks/singletons.d6fefa03.js", "_app/immutable/chunks/index.4da43e74.js", "_app/immutable/entry/app.1d94f9bc.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.51f98ca3.js"], "stylesheets": [], "fonts": [] },
+      client: { "start": "_app/immutable/entry/start.d6da74a7.js", "app": "_app/immutable/entry/app.55df5d10.js", "imports": ["_app/immutable/entry/start.d6da74a7.js", "_app/immutable/chunks/index.51f98ca3.js", "_app/immutable/chunks/singletons.8721e390.js", "_app/immutable/chunks/index.4da43e74.js", "_app/immutable/entry/app.55df5d10.js", "_app/immutable/chunks/preload-helper.a4192956.js", "_app/immutable/chunks/index.51f98ca3.js"], "stylesheets": [], "fonts": [] },
       nodes: [
         __memo(() => Promise.resolve().then(() => (init__(), __exports))),
         __memo(() => Promise.resolve().then(() => (init__2(), __exports2))),

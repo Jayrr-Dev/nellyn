@@ -303,7 +303,7 @@ overflow: hidden;"
         <div class="w-72 h-32 {animate} ">
           <img
             class="pointer-events-none"
-            src="src/lib/img/bd-banner.png"
+            src="/img/bd-banner.png"
             alt="banner"
           />
         </div>
@@ -314,11 +314,7 @@ overflow: hidden;"
       <!-- 24 -->
       <DraggbleObject>
         <div class="w-72 h-32 {animate} animate-infinite">
-          <img
-            class="pointer-events-none"
-            src="src/lib/img/24.png"
-            alt="banner"
-          />
+          <img class="pointer-events-none" src="/img/24.png" alt="banner" />
         </div>
       </DraggbleObject>
     </MysteryBox>
@@ -327,11 +323,7 @@ overflow: hidden;"
       <!-- Adrianna -->
       <DraggbleObject>
         <div class="w-96 h-28 {animate} animate-infinite">
-          <img
-            class="pointer-events-none"
-            src="src/lib/img/ada.png"
-            alt="banner"
-          />
+          <img class="pointer-events-none" src="/img/ada.png" alt="banner" />
         </div>
       </DraggbleObject>
     </MysteryBox>
@@ -364,7 +356,7 @@ overflow: hidden;"
 
           baseScale: 0.5,
         }}
-        src="src/lib/img/bd-background.png"
+        src="/img/bd-background.png"
         alt="birthday cake"
         id="blackout"
         class="w-full animate-slow-scroll -z-40"
@@ -397,11 +389,7 @@ overflow: hidden;"
         on:click={closeTheCard}
         class="absolute bottom-0 h-44 w-80 animate-scale-up2x"
       >
-        <img
-          class="pointer-events-none"
-          src="src/lib/img/b-card.png"
-          alt="card"
-        />
+        <img class="pointer-events-none" src="/img/b-card.png" alt="card" />
       </button>
 
       <SingleTypewriter
@@ -474,7 +462,7 @@ overflow: hidden;"
           <div class="w-44 h-44">
             <img
               class="pointer-events-none"
-              src="src/lib/img/musicplayer.png"
+              src="/img/musicplayer.png"
               alt="banner"
             />
           </div>
@@ -504,7 +492,7 @@ overflow: hidden;"
             >
               <img
                 class="pointer-events-none"
-                src="src/lib/img/b-cover.png"
+                src="/img/b-cover.png"
                 alt="banner"
               />
             </div>
